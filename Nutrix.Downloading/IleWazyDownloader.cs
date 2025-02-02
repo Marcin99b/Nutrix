@@ -6,7 +6,7 @@ using System.Globalization;
 using System.Text;
 
 namespace Nutrix.Downloader;
-internal class IleWazyDownloader
+public class IleWazyDownloader
 {
     private readonly HttpClient client = new();
     private readonly string resultsPath = NutrixPaths.GetDownloaderResult(nameof(IleWazyDownloader));
