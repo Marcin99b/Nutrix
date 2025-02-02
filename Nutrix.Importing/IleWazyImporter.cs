@@ -1,4 +1,6 @@
-﻿using System;
+﻿using HtmlAgilityPack;
+using Nutrix.Database.Procedures;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,17 +10,12 @@ using System.Threading.Tasks;
 namespace Nutrix.Importing;
 internal class IleWazyImporter
 {
-    public void Import()
+    public async Task Import(string filename, string content)
     {
-
-        var resultsPath = @"C:/Users/marci/Desktop/Nutrix/Downloader/Nutrix.Downloader/Results";
         string[] files = Directory.GetFiles(resultsPath);
+        var addOrUpdateProcedure = new AddOrUpdateProductProcedure();
 
-        var products = new ConcurrentBag<Product>();
-        Parallel.ForEach(files, file => Process(File.ReadAllText(file)));
-        await InsertToDatabase();
-
-        void Process(string content)
+        foreach (var file in files)
         {
             var html = new HtmlDocument();
             html.LoadHtml(content);
@@ -54,7 +51,9 @@ internal class IleWazyImporter
 
             }).ToArray();
 
-            var product = new Product(
+            var product = new AddOrUpdateProductInput(
+                "www.ilewazy.pl",
+                "TODO",
                 name,
                 values.First(x => x.Name.Contains("Energia")).Value,
                 values.First(x => x.Name.Contains("Białko")).Value,
@@ -62,34 +61,7 @@ internal class IleWazyImporter
                 values.First(x => x.Name.Contains("Węglowodany")).Value,
                 values.First(x => x.Name.Contains("Błonnik")).Value);
 
-            products!.Add(product);
+            await addOrUpdateProcedure.Execute(product);
         }
     }
-
-    async Task InsertToDatabase()
-    {
-        var connectionString = "Host=localhost;Username=postgres;Database=postgres";
-        await using var dataSource = NpgsqlDataSource.Create(connectionString);
-
-        foreach (var product in products)
-        {
-            await using (var cmd = dataSource.CreateCommand(
-                @"INSERT INTO food_products (name, calories_1000g, proteins_1000g, fats_1000g, carbs_1000g, fiber_1000g)
-        VALUES (($1), ($2), ($3), ($4), ($5), ($6))"))
-            {
-                cmd.Parameters.AddWithValue(product.Title);
-                cmd.Parameters.AddWithValue(product.KcalPer1000g);
-                cmd.Parameters.AddWithValue(product.ProteinPer1000g);
-                cmd.Parameters.AddWithValue(product.FatPer1000g);
-                cmd.Parameters.AddWithValue(product.CarbsPer1000g);
-                cmd.Parameters.AddWithValue(product.FiberPer1000g);
-
-                await cmd.ExecuteNonQueryAsync();
-            }
-        }
-
-        products.Clear();
-    }
-
-    record Product(string Title, int KcalPer1000g, int ProteinPer1000g, int FatPer1000g, int CarbsPer1000g, int FiberPer1000g);
 }

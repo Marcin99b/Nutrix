@@ -12,7 +12,6 @@ internal class IleWazyDownloader
     public void Download()
     {
 
-        var resultsPath = "C:/Users/marci/Desktop/Nutrix/Downloader/Nutrix.Downloader/Results";
         var client = new HttpClient();
         var html = new HtmlDocument();
 
