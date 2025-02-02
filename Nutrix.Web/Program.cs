@@ -45,64 +45,22 @@ public class ETLManager
 {
     private readonly IleWazyDownloader ileWazyDownloader = new();
     private readonly IleWazyImporter ileWazyImporter = new();
-    private bool isDownloading = false;
-    private bool isImporting = false;
-    private readonly object obj = new();
+    
 
     public async Task RunDownloader(string downloader)
     {
-        try
-        {
-            if (isImporting)
-            {
-                return;
-            }
-
-            lock (obj)
-            {
-                isDownloading = true;
-            }
-
-            await ileWazyDownloader.Download();
-        }
-        finally
-        {
-            lock (obj)
-            {
-                isDownloading = false;
-            }
-        }
+        await ileWazyDownloader.Download();
     }
 
     public async Task RunImporter(string importer)
     {
-        try
+        var path = NutrixPaths.GetDownloaderResult(nameof(IleWazyDownloader));
+        foreach (var filePath in Directory.GetFiles(path))
         {
-            if (isDownloading)
-            {
-                return;
-            }
-
-            lock (obj)
-            {
-                isImporting = true;
-            }
-
-            var path = NutrixPaths.GetDownloaderResult(nameof(IleWazyDownloader));
-            foreach (var filePath in Directory.GetFiles(path))
-            {
-                var fileName = Path.GetFileName(filePath);
-                var content = File.ReadAllText(filePath);
-                await ileWazyImporter.Import(fileName, content);
-                File.Delete(filePath);
-            }
-        }
-        finally
-        {
-            lock (obj)
-            {
-                isImporting = false;
-            }
+            var fileName = Path.GetFileName(filePath);
+            var content = File.ReadAllText(filePath);
+            await ileWazyImporter.Import(fileName, content);
+            File.Delete(filePath);
         }
     }
 }
