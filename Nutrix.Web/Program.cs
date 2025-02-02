@@ -1,10 +1,8 @@
 using Hangfire;
-using Hangfire.Common;
 using Hangfire.MemoryStorage;
 using Nutrix.Commons.FileSystem;
 using Nutrix.Downloader;
 using Nutrix.Importing;
-using System.Xml.Linq;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -36,17 +34,22 @@ app.UseHangfireDashboard();
 
 var etlManager = new ETLManager();
 var jobsClient = app!.Services.GetService<IRecurringJobManagerV2>()!;
-jobsClient.AddOrUpdate($"Download_{nameof(IleWazyDownloader)}", () => etlManager.RunDownloader(nameof(IleWazyDownloader)), Cron.Daily);
-jobsClient.AddOrUpdate($"Import_{nameof(IleWazyImporter)}", () => etlManager.RunImporter(nameof(IleWazyImporter)), Cron.Daily);
+
+jobsClient.AddOrUpdate(
+    $"Download_{nameof(IleWazyDownloader)}", () => etlManager.RunDownloader(nameof(IleWazyDownloader)),
+    "0 3 * * 2,4"   /*At    03:00          on Tuesday and Thursday.*/);
+
+jobsClient.AddOrUpdate(
+    $"Import_{nameof(IleWazyImporter)}", () => etlManager.RunImporter(nameof(IleWazyImporter)),
+    "0 4,6 * * 2,4" /*At    04:00, 06:00   on Tuesday and Thursday.*/);
 
 app.Run();
 
 public class ETLManager
 {
-    private readonly IleWazyDownloader ileWazyDownloader = new();
+    private readonly IleWazyDownloader ileWazyDownloader = new(1_000);
     private readonly IleWazyImporter ileWazyImporter = new();
     
-
     public async Task RunDownloader(string downloader)
     {
         await ileWazyDownloader.Download();
@@ -55,7 +58,7 @@ public class ETLManager
     public async Task RunImporter(string importer)
     {
         var path = NutrixPaths.GetDownloaderResult(nameof(IleWazyDownloader));
-        foreach (var filePath in Directory.GetFiles(path))
+        foreach (var filePath in Directory.GetFiles(path).OrderBy(File.GetLastWriteTime))
         {
             var fileName = Path.GetFileName(filePath);
             var content = File.ReadAllText(filePath);

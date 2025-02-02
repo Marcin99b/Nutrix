@@ -10,13 +10,16 @@ public class IleWazyDownloader
 {
     private readonly HttpClient client = new();
     private readonly string resultsPath = NutrixPaths.GetDownloaderResult(nameof(IleWazyDownloader));
+    private readonly int delayMs;
 
-    public IleWazyDownloader()
+    public IleWazyDownloader(int delayMs)
     {
         if (!Directory.Exists(resultsPath))
         {
             Directory.CreateDirectory(resultsPath);
         }
+
+        this.delayMs = delayMs;
     }
 
     public async Task Download()
@@ -49,7 +52,7 @@ public class IleWazyDownloader
 
         foreach (var productUrl in productsOnPage)
         {
-            await Task.Delay(200);
+            await Task.Delay(delayMs);
             var name = productUrl.Replace("http://www.ilewazy.pl/", string.Empty);
 
             var sw = Stopwatch.StartNew();

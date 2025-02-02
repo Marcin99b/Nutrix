@@ -38,6 +38,8 @@ public class IleWazyImporter
                 trimmed = "0";
             }
 
+            trimmed = trimmed.Replace(',', '.');
+
             var per100g = decimal.Parse(trimmed);
             var per1000g = Convert.ToInt32(per100g * 10);
             return new
