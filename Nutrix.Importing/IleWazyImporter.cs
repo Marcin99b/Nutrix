@@ -4,7 +4,7 @@ using Nutrix.Database.Procedures;
 using Nutrix.Downloader;
 
 namespace Nutrix.Importing;
-internal class IleWazyImporter
+public class IleWazyImporter
 {
     private readonly HttpClient client = new();
     private readonly string resultsPath = NutrixPaths.GetDownloaderResult(nameof(IleWazyDownloader));

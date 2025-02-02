@@ -19,11 +19,20 @@ public class AddOrUpdateProductProcedure
         var connectionString = "Host=localhost;Username=postgres;Database=postgres";
         await using var dataSource = NpgsqlDataSource.Create(connectionString);
 
-        await using var cmd = dataSource.CreateCommand(
-            @"INSERT INTO food_products
-            (source, external_id, name, kcal_1000g, proteins_1000g, fats_1000g, carbs_1000g, fiber_1000g)
-            VALUES 
-            (($1), ($2), ($3), ($4), ($5), ($6), ($7), ($8))");
+        await using var cmd = dataSource.CreateCommand(@"
+            IF SELECT 1 FROM public.food_products WHERE source = ($1) AND external_id = ($2)
+            BEGIN
+                UPDATE public.food_products
+                SET name = ($3), kcal_1000g = ($4), proteins_1000g = ($5), fats_1000g = ($6), carbs_1000g = ($7), fiber_1000g = ($8)
+                WHERE source = ($1) AND external_id = ($2)
+            END
+            ELSE
+            BEGIN
+                INSERT INTO public.food_products
+                (source, external_id, name, kcal_1000g, proteins_1000g, fats_1000g, carbs_1000g, fiber_1000g)
+                VALUES 
+                (($1), ($2), ($3), ($4), ($5), ($6), ($7), ($8))
+            END");
         
         cmd.Parameters.AddWithValue(input.Source);
         cmd.Parameters.AddWithValue(input.ExternalId);

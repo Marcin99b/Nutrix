@@ -11,7 +11,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Nutrix.Commons\Nutrix.Commons.csproj" />
     <ProjectReference Include="..\Nutrix.Database\Nutrix.Database.csproj" />
+    <ProjectReference Include="..\Nutrix.Downloading\Nutrix.Downloading.csproj" />
   </ItemGroup>
 
 </Project>
