@@ -3,8 +3,24 @@ using Hangfire.MemoryStorage;
 using Nutrix.Commons.FileSystem;
 using Nutrix.Downloader;
 using Nutrix.Importing;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Logging.ClearProviders();
+var openObserveEmail = Environment.GetEnvironmentVariable("openobserve_login", EnvironmentVariableTarget.User);
+var openObservePassword = Environment.GetEnvironmentVariable("openobserve_password", EnvironmentVariableTarget.User);
+Log.Logger = new LoggerConfiguration()
+    .Enrich.WithEnvironmentName()
+    .Enrich.WithMachineName()
+    .Enrich.WithProcessId()
+    .Enrich.WithThreadId()
+    .WriteTo.OpenObserve("http://localhost:5080", "default", openObserveEmail, openObservePassword)
+    .MinimumLevel.Information()
+    .CreateLogger();
+
+builder.Logging.AddSerilog(Log.Logger);
+builder.Services.AddSingleton(Log.Logger);
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
