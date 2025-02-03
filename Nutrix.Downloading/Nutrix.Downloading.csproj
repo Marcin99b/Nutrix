@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Nutrix.Commons\Nutrix.Commons.csproj" />
+    <ProjectReference Include="..\Nutrix.Logging\Nutrix.Logging.csproj" />
   </ItemGroup>
 
 </Project>

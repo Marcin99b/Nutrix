@@ -3,6 +3,7 @@ using Hangfire.MemoryStorage;
 using Nutrix.Commons.FileSystem;
 using Nutrix.Downloading;
 using Nutrix.Importing;
+using Nutrix.Logging;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -63,8 +64,9 @@ app.Run();
 
 public class ETLManager
 {
-    private readonly IleWazyDownloader ileWazyDownloader = new(1_000);
-    private readonly IleWazyImporter ileWazyImporter = new();
+    //todo IoC
+    private readonly IleWazyDownloader ileWazyDownloader = new(1_000, new EventLogger(Log.Logger));
+    private readonly IleWazyImporter ileWazyImporter = new(new EventLogger(Log.Logger));
 
     public async Task RunDownloader(string downloader) => await this.ileWazyDownloader.Download();
 

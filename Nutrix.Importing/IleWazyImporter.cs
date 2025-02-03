@@ -2,19 +2,23 @@
 using Nutrix.Commons.FileSystem;
 using Nutrix.Database.Procedures;
 using Nutrix.Downloading;
+using Nutrix.Logging;
 
 namespace Nutrix.Importing;
 public class IleWazyImporter
 {
     private readonly HttpClient client = new();
     private readonly string resultsPath = NutrixPaths.GetDownloaderResult(nameof(IleWazyDownloader));
+    private readonly EventLogger eventLogger;
 
-    public IleWazyImporter()
+    public IleWazyImporter(EventLogger eventLogger)
     {
         if (!Directory.Exists(this.resultsPath))
         {
             _ = Directory.CreateDirectory(this.resultsPath);
         }
+
+        this.eventLogger = eventLogger;
     }
 
     public async Task Import(string filename, string content)

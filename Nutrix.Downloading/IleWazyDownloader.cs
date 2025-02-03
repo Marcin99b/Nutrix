@@ -1,9 +1,8 @@
 ﻿using HtmlAgilityPack;
+using Nutrix.Commons;
 using Nutrix.Commons.ETL;
 using Nutrix.Commons.FileSystem;
-using System.Diagnostics;
-using System.Globalization;
-using System.Text;
+using Nutrix.Logging;
 
 namespace Nutrix.Downloading;
 public class IleWazyDownloader
@@ -11,8 +10,9 @@ public class IleWazyDownloader
     private readonly HttpClient client = new();
     private readonly string resultsPath = NutrixPaths.GetDownloaderResult(nameof(IleWazyDownloader));
     private readonly int delayMs;
+    private readonly EventLogger eventLogger;
 
-    public IleWazyDownloader(int delayMs)
+    public IleWazyDownloader(int delayMs, EventLogger eventLogger)
     {
         if (!Directory.Exists(this.resultsPath))
         {
@@ -20,6 +20,7 @@ public class IleWazyDownloader
         }
 
         this.delayMs = delayMs;
+        this.eventLogger = eventLogger;
     }
 
     public async Task Download()
@@ -34,8 +35,10 @@ public class IleWazyDownloader
             .OrderByDescending(x => x)
             .FirstOrDefault(1);
 
-        var morePages = false;
-        do
+        this.eventLogger.Downloader_Start(nameof(IleWazyDownloader), lastPage);
+
+        var morePages = true;
+        while (morePages)
         {
             morePages = await this.DownloadPage(lastPage, history);
             history.Save(nameof(IleWazyDownloader));
@@ -43,7 +46,7 @@ public class IleWazyDownloader
             {
                 lastPage++;
             }
-        } while (morePages);
+        }
     }
 
     private async Task<bool> DownloadPage(int page, DownloadHistory history)
@@ -82,13 +85,13 @@ public class IleWazyDownloader
         html!.LoadHtml(content);
         var items = html.DocumentNode.SelectNodes("//li[contains(@class, 'span3')]/div[contains(@class, 'subtitle')]/a")
             .Select(x => x.Attributes.First(x => x.Name == "href").Value)
-            .Select(this.RemoveDiacritics)
+            .Select(x => x.RemoveDiacritics())
             .ToArray();
 
         return items;
     }
 
-    private string GetPageUrl(int id) => this.RemoveDiacritics($"http://www.ilewazy.pl/produkty/page/{id}/s/date/k/asc/");
+    private string GetPageUrl(int id) => $"http://www.ilewazy.pl/produkty/page/{id}/s/date/k/asc/".RemoveDiacritics();
 
     private async Task<bool> TrySaveProduct(DownloadHistory history, int page, string productUrl)
     {
@@ -101,9 +104,8 @@ public class IleWazyDownloader
             return false;
         }
 
-        var content = await this.DownloadProduct(productUrl);
-        content = CutContent(content);
-        var hash = HashMD5(content);
+        var content = CutContent(await this.client!.GetStringAsync(productUrl));
+        var hash = content.HashMD5();
 
         if (foundItem == null)
         {
@@ -125,35 +127,6 @@ public class IleWazyDownloader
         return true;
     }
 
-    private string RemoveDiacritics(string text)
-    {
-        if (string.IsNullOrEmpty(text))
-        {
-            return text;
-        }
-
-        var normalizedString = text.Normalize(NormalizationForm.FormD);
-        var stringBuilder = new StringBuilder();
-
-        foreach (var c in normalizedString)
-        {
-            if (CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.NonSpacingMark)
-            {
-                _ = stringBuilder.Append(c);
-            }
-        }
-
-        return stringBuilder.ToString().Normalize(NormalizationForm.FormC);
-    }
-
-    private static string HashMD5(string input)
-    {
-        var inputBytes = Encoding.ASCII.GetBytes(input);
-        var hashBytes = System.Security.Cryptography.MD5.HashData(inputBytes);
-
-        return Convert.ToHexString(hashBytes);
-    }
-
     private static string CutContent(string input)
     {
         var itemHtml = new HtmlDocument();
@@ -166,14 +139,5 @@ public class IleWazyDownloader
 
         var adsIndex = interestingArea!.IndexOf(@"<!--podobne produkty-->");
         return interestingArea[..adsIndex];
-    }
-
-    private async Task<string> DownloadProduct(string url)
-    {
-        var sw = Stopwatch.StartNew();
-        var content = await this.client!.GetStringAsync(url);
-        sw.Stop();
-        //todo log performance
-        return content;
     }
 }

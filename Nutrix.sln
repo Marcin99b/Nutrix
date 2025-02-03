@@ -11,7 +11,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nutrix.Database", "Nutrix.D
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nutrix.Commons", "Nutrix.Commons\Nutrix.Commons.csproj", "{7A47F7B7-299A-4235-948D-EF91CDD6BD5B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nutrix.Web", "Nutrix.Web\Nutrix.Web.csproj", "{E9D1C339-DF12-4AED-8AE3-A1E8B46435BA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nutrix.Web", "Nutrix.Web\Nutrix.Web.csproj", "{E9D1C339-DF12-4AED-8AE3-A1E8B46435BA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nutrix.Logging", "Nutrix.Logging\Nutrix.Logging.csproj", "{B5680DBF-B414-42FE-AE17-CF40FF672FBA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,6 +41,10 @@ Global
 		{E9D1C339-DF12-4AED-8AE3-A1E8B46435BA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E9D1C339-DF12-4AED-8AE3-A1E8B46435BA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E9D1C339-DF12-4AED-8AE3-A1E8B46435BA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B5680DBF-B414-42FE-AE17-CF40FF672FBA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B5680DBF-B414-42FE-AE17-CF40FF672FBA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B5680DBF-B414-42FE-AE17-CF40FF672FBA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B5680DBF-B414-42FE-AE17-CF40FF672FBA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
