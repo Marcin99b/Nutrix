@@ -1,0 +1,55 @@
+﻿using Hangfire;
+using Hangfire.MemoryStorage;
+using Nutrix.Downloading;
+using Nutrix.Importing;
+using Nutrix.Logging;
+using Serilog;
+
+namespace Nutrix.Web.IoC;
+
+public static class ServiceExtensions
+{
+    public static WebApplicationBuilder SetupLogging(this WebApplicationBuilder builder)
+    {
+        builder.Logging.ClearProviders();
+        var openObserveEmail = Environment.GetEnvironmentVariable("openobserve_login", EnvironmentVariableTarget.User);
+        var openObservePassword = Environment.GetEnvironmentVariable("openobserve_password", EnvironmentVariableTarget.User);
+        Log.Logger = new LoggerConfiguration()
+            .Enrich.WithEnvironmentName()
+            .Enrich.WithMachineName()
+            .Enrich.WithProcessId()
+            .Enrich.WithThreadId()
+            .WriteTo.OpenObserve("http://localhost:5080", "default", openObserveEmail, openObservePassword)
+            .MinimumLevel.Information()
+            .CreateLogger();
+
+        builder.Logging.AddSerilog(Log.Logger);
+        builder.Services.AddSingleton(Log.Logger);
+        builder.Services.AddSingleton<EventLogger>();
+
+        return builder;
+    }
+
+    public static WebApplicationBuilder SetupHangfire(this WebApplicationBuilder builder)
+    {
+        builder.Services
+            .AddHangfire(configuration => configuration
+            //.UseSerilogLogProvider()
+            .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+            .UseSimpleAssemblyNameTypeSerializer()
+            .UseRecommendedSerializerSettings()
+            .UseMemoryStorage()); //todo db
+        builder.Services.AddHangfireServer();
+
+        return builder;
+    }
+
+    public static WebApplicationBuilder SetupETL(this WebApplicationBuilder builder)
+    {
+        builder.Services.AddSingleton(x => new IleWazyDownloader(200, x.GetService<EventLogger>()!));
+        builder.Services.AddSingleton<IleWazyImporter>();
+        builder.Services.AddSingleton<ETLManager>();
+
+        return builder;
+    }
+}

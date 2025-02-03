@@ -35,7 +35,7 @@ public record DownloadHistory
 public record DownloadHistoryItem(string ExternalId, string Hash)
 {
     public string Hash { get; private set; } = Hash;
-    public DateTime FirstDownload { get; } = DateTime.Now;
+    public DateTime FirstDownload { get; private set; } = DateTime.Now;
     public DateTime LastFoundModification { get; private set; } = default;
     public DateTime LastDownloadAttempt { get; set; } = DateTime.Now;
     public int TotalModifications { get; private set; } = 0;
