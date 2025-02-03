@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Nutrix.Commons.FileSystem;
 
-namespace Nutrix.Commons.ETL;
+namespace Nutrix.Downloading;
 public record DownloadHistory
 {
     public List<DownloadHistoryItem> Items { get; } = [];
@@ -10,6 +10,8 @@ public record DownloadHistory
     private DownloadHistory()
     {
     }
+
+    public DownloadHistoryItem? Get(string externalId) => this.Items.FirstOrDefault(x => x.ExternalId == externalId);
 
     public static DownloadHistory CreateOrLoad(string downloaderName)
     {

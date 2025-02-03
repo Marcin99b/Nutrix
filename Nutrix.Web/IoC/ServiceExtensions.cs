@@ -1,5 +1,6 @@
 ﻿using Hangfire;
 using Hangfire.MemoryStorage;
+using Nutrix.Commons.FileSystem;
 using Nutrix.Downloading;
 using Nutrix.Importing;
 using Nutrix.Logging;
@@ -46,7 +47,8 @@ public static class ServiceExtensions
 
     public static WebApplicationBuilder SetupETL(this WebApplicationBuilder builder)
     {
-        builder.Services.AddSingleton(x => new IleWazyDownloader(200, x.GetService<EventLogger>()!));
+        builder.Services.AddSingleton<ETLStorage>();
+        builder.Services.AddSingleton(x => new IleWazyDownloader(200, x.GetService<EventLogger>()!, x.GetService<ETLStorage>()!));
         builder.Services.AddSingleton<IleWazyImporter>();
         builder.Services.AddSingleton<ETLManager>();
 

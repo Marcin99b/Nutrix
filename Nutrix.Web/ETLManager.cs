@@ -2,21 +2,18 @@
 using Nutrix.Downloading;
 using Nutrix.Importing;
 
-public class ETLManager(IleWazyDownloader ileWazyDownloader, IleWazyImporter ileWazyImporter)
+public class ETLManager(IleWazyDownloader ileWazyDownloader, IleWazyImporter ileWazyImporter, ETLStorage storage)
 {
     public async Task RunDownloader(string downloader) => await ileWazyDownloader.Download();
 
     public async Task RunImporter(string importer)
     {
-        var path = NutrixPaths.GetDownloaderResult(nameof(IleWazyDownloader));
-        foreach (var filePath in Directory.GetFiles(path)
-            .Where(x => Path.GetFileName(x) != "DownloadHistory.json")
-            .OrderBy(File.GetLastWriteTime))
+        foreach (var path in storage.GetFilesToImport(nameof(IleWazyDownloader)))
         {
-            var fileName = Path.GetFileName(filePath);
-            var content = File.ReadAllText(filePath);
+            var fileName = Path.GetFileName(path);
+            var content = File.ReadAllText(path);
             await ileWazyImporter.Import(fileName, content);
-            File.Delete(filePath);
+            File.Delete(path);
         }
     }
 }
