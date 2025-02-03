@@ -4,6 +4,7 @@ using Nutrix.Commons.FileSystem;
 using System;
 using System.Diagnostics;
 using System.Globalization;
+using System.Reflection.Metadata;
 using System.Text;
 
 namespace Nutrix.Downloader;
@@ -57,59 +58,18 @@ public class IleWazyDownloader
             return false;
         }
 
+        await Task.Delay(delayMs);
+
         foreach (var productUrl in productsOnPage)
         {
-            var name = productUrl.Replace("http://www.ilewazy.pl/", string.Empty);
-            var foundItem = history.Items.FirstOrDefault(x => x.ExternalId == name);
-            if (foundItem != null && !foundItem.ShouldTryDownload())
+            var isDownloadedFromServer = await this.TrySaveProduct(history, page, productUrl);
+            if (isDownloadedFromServer)
             {
-                //skip if last change was too recently
-                continue;
+                await Task.Delay(delayMs);
             }
-
-            var sw = Stopwatch.StartNew();
-            var content = await client!.GetStringAsync(productUrl);
-            sw.Stop();
-
-            var itemHtml = new HtmlDocument();
-            itemHtml.LoadHtml(content);
-            var interestingArea = itemHtml.DocumentNode
-                .SelectNodes("//div[contains(@class, 'container main')]/div[contains(@class, 'row')]")
-                .Select(x => x.InnerHtml)
-                .ToArray()
-                .Aggregate((a,b) => $"{a}\r\n{b}");
-
-            var adsIndex = interestingArea!.IndexOf(@"<!--podobne produkty-->");
-            content = interestingArea[..adsIndex];
-
-            using var md5 = System.Security.Cryptography.MD5.Create();
-            var inputBytes = Encoding.ASCII.GetBytes(content);
-            var hashBytes = md5.ComputeHash(inputBytes);
-
-            var hash = Convert.ToHexString(hashBytes);
-
-            if (foundItem == null)
-            {
-                history.Items.Add(new DownloadHistoryItem(name, hash));
-            }
-            else if (foundItem.Hash == hash)
-            {
-                // skip if data don't changed
-                foundItem.LastDownloadAttempt = DateTime.Now;
-                continue;
-            }
-            else
-            {
-                foundItem.UpdateHash(hash);
-            }
-
-            var fileName = $"{page}_{name}.html";
-            File.WriteAllText(Path.Combine(resultsPath!, fileName), content);
-            await Task.Delay(delayMs);
         }
 
-        var totalProducts = Directory.GetFiles(resultsPath).Length;
-        return totalProducts > 0;
+        return true;
     }
 
     async Task<string[]> GetUrlsToProductsOnPage(int page)
@@ -129,11 +89,45 @@ public class IleWazyDownloader
             .Select(this.RemoveDiacritics)
             .ToArray();
 
-        await Task.Delay(delayMs);
         return items;
     }
 
     string GetPageUrl(int id) => this.RemoveDiacritics($"http://www.ilewazy.pl/produkty/page/{id}/s/date/k/asc/");
+
+    private async Task<bool> TrySaveProduct(DownloadHistory history, int page, string productUrl)
+    {
+        var name = productUrl.Replace("http://www.ilewazy.pl/", string.Empty);
+
+        var foundItem = history.Items.FirstOrDefault(x => x.ExternalId == name);
+        if (foundItem?.ShouldTryDownload() == false)
+        {
+            //skip if last change was too recently
+            return false;
+        }
+
+        var content = await this.DownloadProduct(productUrl);
+        content = this.CutContent(content);
+        var hash = this.HashMD5(content);
+
+        if (foundItem == null)
+        {
+            history.Items.Add(new DownloadHistoryItem(name, hash));
+        }
+        else if (foundItem.Hash == hash)
+        {
+            // skip if data don't changed
+            foundItem.LastDownloadAttempt = DateTime.Now;
+            return true;
+        }
+        else
+        {
+            foundItem.UpdateHash(hash);
+        }
+
+        var fileName = $"{page}_{name}.html";
+        File.WriteAllText(Path.Combine(resultsPath!, fileName), content);
+        return true;
+    }
 
     private string RemoveDiacritics(string text)
     {
@@ -154,5 +148,37 @@ public class IleWazyDownloader
         }
 
         return stringBuilder.ToString().Normalize(NormalizationForm.FormC);
+    }
+
+    private string HashMD5(string input)
+    {
+        using var md5 = System.Security.Cryptography.MD5.Create();
+        var inputBytes = Encoding.ASCII.GetBytes(input);
+        var hashBytes = md5.ComputeHash(inputBytes);
+
+        return Convert.ToHexString(hashBytes);
+    }
+
+    private string CutContent(string input)
+    {
+        var itemHtml = new HtmlDocument();
+        itemHtml.LoadHtml(input);
+        var interestingArea = itemHtml.DocumentNode
+            .SelectNodes("//div[contains(@class, 'container main')]/div[contains(@class, 'row')]")
+            .Select(x => x.InnerHtml)
+            .ToArray()
+            .Aggregate((a, b) => $"{a}\r\n{b}");
+
+        var adsIndex = interestingArea!.IndexOf(@"<!--podobne produkty-->");
+        return interestingArea[..adsIndex];
+    }
+
+    private async Task<string> DownloadProduct(string url)
+    {
+        var sw = Stopwatch.StartNew();
+        var content = await client!.GetStringAsync(url);
+        sw.Stop();
+        //todo log performance
+        return content;
     }
 }
