@@ -4,7 +4,7 @@ using Nutrix.Commons.FileSystem;
 namespace Nutrix.Commons.ETL;
 public record DownloadHistory
 {
-    public List<DownloadHistoryItem> Items { get; } = new();
+    public List<DownloadHistoryItem> Items { get; } = [];
     public DateTime LastDownload { get; private set; } = default;
 
     private DownloadHistory()

@@ -1,13 +1,11 @@
 ﻿using HtmlAgilityPack;
 using Nutrix.Commons.ETL;
 using Nutrix.Commons.FileSystem;
-using System;
 using System.Diagnostics;
 using System.Globalization;
-using System.Reflection.Metadata;
 using System.Text;
 
-namespace Nutrix.Downloader;
+namespace Nutrix.Downloading;
 public class IleWazyDownloader
 {
     private readonly HttpClient client = new();
@@ -16,9 +14,9 @@ public class IleWazyDownloader
 
     public IleWazyDownloader(int delayMs)
     {
-        if (!Directory.Exists(resultsPath))
+        if (!Directory.Exists(this.resultsPath))
         {
-            Directory.CreateDirectory(resultsPath);
+            _ = Directory.CreateDirectory(this.resultsPath);
         }
 
         this.delayMs = delayMs;
@@ -28,7 +26,7 @@ public class IleWazyDownloader
     {
         var history = DownloadHistory.CreateOrLoad(nameof(IleWazyDownloader));
 
-        var lastPage = Directory.GetFiles(resultsPath)
+        var lastPage = Directory.GetFiles(this.resultsPath)
             .Select(Path.GetFileName)
             .Where(x => x != "DownloadHistory.json")
             .Select(x => x!.Split('_')[0])
@@ -50,7 +48,7 @@ public class IleWazyDownloader
         history.Save(nameof(IleWazyDownloader));
     }
 
-    async Task<bool> DownloadPage(int page, DownloadHistory history)
+    private async Task<bool> DownloadPage(int page, DownloadHistory history)
     {
         var productsOnPage = await this.GetUrlsToProductsOnPage(page);
         if (productsOnPage.Length == 0)
@@ -58,25 +56,25 @@ public class IleWazyDownloader
             return false;
         }
 
-        await Task.Delay(delayMs);
+        await Task.Delay(this.delayMs);
 
         foreach (var productUrl in productsOnPage)
         {
             var isDownloadedFromServer = await this.TrySaveProduct(history, page, productUrl);
             if (isDownloadedFromServer)
             {
-                await Task.Delay(delayMs);
+                await Task.Delay(this.delayMs);
             }
         }
 
         return true;
     }
 
-    async Task<string[]> GetUrlsToProductsOnPage(int page)
+    private async Task<string[]> GetUrlsToProductsOnPage(int page)
     {
         var url = this.GetPageUrl(page);
 
-        var content = await client!.GetStringAsync(url);
+        var content = await this.client!.GetStringAsync(url);
         if (content.Contains("Niestety nie udało nam się nic dla Ciebie znaleźć..."))
         {
             return Array.Empty<string>();
@@ -92,7 +90,7 @@ public class IleWazyDownloader
         return items;
     }
 
-    string GetPageUrl(int id) => this.RemoveDiacritics($"http://www.ilewazy.pl/produkty/page/{id}/s/date/k/asc/");
+    private string GetPageUrl(int id) => this.RemoveDiacritics($"http://www.ilewazy.pl/produkty/page/{id}/s/date/k/asc/");
 
     private async Task<bool> TrySaveProduct(DownloadHistory history, int page, string productUrl)
     {
@@ -125,7 +123,7 @@ public class IleWazyDownloader
         }
 
         var fileName = $"{page}_{name}.html";
-        File.WriteAllText(Path.Combine(resultsPath!, fileName), content);
+        File.WriteAllText(Path.Combine(this.resultsPath!, fileName), content);
         return true;
     }
 
@@ -139,11 +137,11 @@ public class IleWazyDownloader
         var normalizedString = text.Normalize(NormalizationForm.FormD);
         var stringBuilder = new StringBuilder();
 
-        foreach (char c in normalizedString)
+        foreach (var c in normalizedString)
         {
             if (CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.NonSpacingMark)
             {
-                stringBuilder.Append(c);
+                _ = stringBuilder.Append(c);
             }
         }
 
@@ -176,7 +174,7 @@ public class IleWazyDownloader
     private async Task<string> DownloadProduct(string url)
     {
         var sw = Stopwatch.StartNew();
-        var content = await client!.GetStringAsync(url);
+        var content = await this.client!.GetStringAsync(url);
         sw.Stop();
         //todo log performance
         return content;

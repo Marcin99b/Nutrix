@@ -36,6 +36,6 @@ public class AddOrUpdateProductProcedure
         $$";
 
         await using var cmd = dataSource.CreateCommand(query);
-        await cmd.ExecuteNonQueryAsync();
+        _ = await cmd.ExecuteNonQueryAsync();
     }
 }

@@ -1,7 +1,7 @@
 ﻿using HtmlAgilityPack;
 using Nutrix.Commons.FileSystem;
 using Nutrix.Database.Procedures;
-using Nutrix.Downloader;
+using Nutrix.Downloading;
 
 namespace Nutrix.Importing;
 public class IleWazyImporter
@@ -11,9 +11,9 @@ public class IleWazyImporter
 
     public IleWazyImporter()
     {
-        if (!Directory.Exists(resultsPath))
+        if (!Directory.Exists(this.resultsPath))
         {
-            Directory.CreateDirectory(resultsPath);
+            _ = Directory.CreateDirectory(this.resultsPath);
         }
     }
 
@@ -62,6 +62,6 @@ public class IleWazyImporter
             values.First(x => x.Name.Contains("Błonnik")).Value);
 
         await addOrUpdateProcedure.Execute(product);
-        
+
     }
 }

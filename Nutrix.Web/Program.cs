@@ -1,7 +1,7 @@
 using Hangfire;
 using Hangfire.MemoryStorage;
 using Nutrix.Commons.FileSystem;
-using Nutrix.Downloader;
+using Nutrix.Downloading;
 using Nutrix.Importing;
 using Serilog;
 
@@ -39,7 +39,7 @@ var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger().UseSwaggerUI();
+    _ = app.UseSwagger().UseSwaggerUI();
 }
 
 app.UseHttpsRedirection();
@@ -65,11 +65,8 @@ public class ETLManager
 {
     private readonly IleWazyDownloader ileWazyDownloader = new(1_000);
     private readonly IleWazyImporter ileWazyImporter = new();
-    
-    public async Task RunDownloader(string downloader)
-    {
-        await ileWazyDownloader.Download();
-    }
+
+    public async Task RunDownloader(string downloader) => await this.ileWazyDownloader.Download();
 
     public async Task RunImporter(string importer)
     {
@@ -80,7 +77,7 @@ public class ETLManager
         {
             var fileName = Path.GetFileName(filePath);
             var content = File.ReadAllText(filePath);
-            await ileWazyImporter.Import(fileName, content);
+            await this.ileWazyImporter.Import(fileName, content);
             File.Delete(filePath);
         }
     }
