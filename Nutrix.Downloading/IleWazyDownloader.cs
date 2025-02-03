@@ -13,7 +13,7 @@ public class IleWazyDownloader(int delayMs, EventLogger eventLogger, ETLStorage 
         var history = DownloadHistory.CreateOrLoad(nameof(IleWazyDownloader));
         var lastPage = storage.GetLastPage(nameof(IleWazyDownloader));
 
-        eventLogger.Downloader_Start(nameof(IleWazyDownloader), lastPage);
+        eventLogger.Downloader_Started(nameof(IleWazyDownloader), lastPage);
 
         var morePages = true;
         while (morePages)
@@ -25,6 +25,8 @@ public class IleWazyDownloader(int delayMs, EventLogger eventLogger, ETLStorage 
                 lastPage++;
             }
         }
+
+        eventLogger.Downloader_Finished(nameof(IleWazyDownloader), lastPage - 1);
     }
 
     private async Task<bool> DownloadPage(int page, DownloadHistory history)
@@ -37,14 +39,24 @@ public class IleWazyDownloader(int delayMs, EventLogger eventLogger, ETLStorage 
 
         await Task.Delay(delayMs);
 
+        var productsDownloaded = 0;
+        var productsSaved = 0;
         foreach (var productUrl in productsOnPage)
         {
-            var isDownloadedFromServer = await this.TrySaveProduct(history, page, productUrl);
-            if (isDownloadedFromServer)
+            var (isDownloaded, isSaved) = await this.TrySaveProduct(history, page, productUrl);
+            if (isDownloaded)
             {
+                productsDownloaded++;
+                if (isSaved)
+                {
+                    productsSaved++;
+                }
+
                 await Task.Delay(delayMs);
             }
         }
+
+        eventLogger.Downloader_DownloadedPage(nameof(IleWazyDownloader), page, productsOnPage.Length, productsDownloaded, productsSaved);
 
         return true;
     }
@@ -71,14 +83,14 @@ public class IleWazyDownloader(int delayMs, EventLogger eventLogger, ETLStorage 
 
     private string GetPageUrl(int id) => $"http://www.ilewazy.pl/produkty/page/{id}/s/date/k/asc/".RemoveDiacritics();
 
-    private async Task<bool> TrySaveProduct(DownloadHistory history, int page, string productUrl)
+    private async Task<(bool Downloaded, bool Saved)> TrySaveProduct(DownloadHistory history, int page, string productUrl)
     {
         var externalId = productUrl.Replace("http://www.ilewazy.pl/", string.Empty);
         var historyItem = history.Get(externalId);
         if (historyItem?.ShouldTryDownload() == false)
         {
             //skip if last change was too recently
-            return false;
+            return (false, false);
         }
 
         var content = CutContent(await this.client!.GetStringAsync(productUrl));
@@ -92,7 +104,7 @@ public class IleWazyDownloader(int delayMs, EventLogger eventLogger, ETLStorage 
         {
             // skip if data don't changed
             historyItem.LastDownloadAttempt = DateTime.Now;
-            return true;
+            return (true, false);
         }
         else
         {
@@ -100,7 +112,7 @@ public class IleWazyDownloader(int delayMs, EventLogger eventLogger, ETLStorage 
         }
 
         storage.Save(nameof(IleWazyDownloader), page, externalId, content);
-        return true;
+        return (true, true);
     }
 
     private static string CutContent(string input)
