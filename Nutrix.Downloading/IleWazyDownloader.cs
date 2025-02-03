@@ -38,14 +38,12 @@ public class IleWazyDownloader
         do
         {
             morePages = await this.DownloadPage(lastPage, history);
+            history.Save(nameof(IleWazyDownloader));
             if (morePages)
             {
-                history.Save(nameof(IleWazyDownloader));
                 lastPage++;
             }
         } while (morePages);
-
-        history.Save(nameof(IleWazyDownloader));
     }
 
     private async Task<bool> DownloadPage(int page, DownloadHistory history)
