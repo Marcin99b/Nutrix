@@ -71,6 +71,17 @@ public class IleWazyDownloader
             var content = await client!.GetStringAsync(productUrl);
             sw.Stop();
 
+            var itemHtml = new HtmlDocument();
+            itemHtml.LoadHtml(content);
+            var interestingArea = itemHtml.DocumentNode
+                .SelectNodes("//div[contains(@class, 'container main')]/div[contains(@class, 'row')]")
+                .Select(x => x.InnerHtml)
+                .ToArray()
+                .Aggregate((a,b) => $"{a}\r\n{b}");
+
+            var adsIndex = interestingArea!.IndexOf(@"<!--podobne produkty-->");
+            content = interestingArea[..adsIndex];
+
             using var md5 = System.Security.Cryptography.MD5.Create();
             var inputBytes = Encoding.ASCII.GetBytes(content);
             var hashBytes = md5.ComputeHash(inputBytes);

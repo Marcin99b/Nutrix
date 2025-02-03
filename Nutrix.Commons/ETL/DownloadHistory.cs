@@ -57,12 +57,12 @@ public record DownloadHistoryItem(string ExternalId, string Hash)
 
     public bool ShouldTryDownload()
     {
-        //if download is 1 time per day
-        //and there are at least 3 days from last download
+        //if content never changed
+        //time is 2x more than time between last attempt and last found change
         //check changes
         if (this.TotalModifications == 0)
         {
-            return (DateTime.Now - this.LastDownloadAttempt) * 3 > DateTime.Now - this.FirstDownload;
+            return (DateTime.Now - this.LastDownloadAttempt) * 2 > this.LastDownloadAttempt - this.FirstDownload;
         }
 
         //if download is 1 time per day
