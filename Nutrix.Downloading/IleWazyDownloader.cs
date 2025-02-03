@@ -77,7 +77,7 @@ public class IleWazyDownloader
         var content = await this.client!.GetStringAsync(url);
         if (content.Contains("Niestety nie udało nam się nic dla Ciebie znaleźć..."))
         {
-            return Array.Empty<string>();
+            return [];
         }
 
         var html = new HtmlDocument();
@@ -104,8 +104,8 @@ public class IleWazyDownloader
         }
 
         var content = await this.DownloadProduct(productUrl);
-        content = this.CutContent(content);
-        var hash = this.HashMD5(content);
+        content = CutContent(content);
+        var hash = HashMD5(content);
 
         if (foundItem == null)
         {
@@ -148,16 +148,15 @@ public class IleWazyDownloader
         return stringBuilder.ToString().Normalize(NormalizationForm.FormC);
     }
 
-    private string HashMD5(string input)
+    private static string HashMD5(string input)
     {
-        using var md5 = System.Security.Cryptography.MD5.Create();
         var inputBytes = Encoding.ASCII.GetBytes(input);
-        var hashBytes = md5.ComputeHash(inputBytes);
+        var hashBytes = System.Security.Cryptography.MD5.HashData(inputBytes);
 
         return Convert.ToHexString(hashBytes);
     }
 
-    private string CutContent(string input)
+    private static string CutContent(string input)
     {
         var itemHtml = new HtmlDocument();
         itemHtml.LoadHtml(input);

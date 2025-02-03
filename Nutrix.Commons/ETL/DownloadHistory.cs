@@ -20,7 +20,7 @@ public record DownloadHistory
         }
 
         var content = File.ReadAllText(path);
-        return JsonConvert.DeserializeObject<DownloadHistory>(content);
+        return JsonConvert.DeserializeObject<DownloadHistory>(content)!;
     }
 
     public void Save(string downloaderName)
