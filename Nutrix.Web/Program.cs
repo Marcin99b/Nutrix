@@ -74,7 +74,9 @@ public class ETLManager
     public async Task RunImporter(string importer)
     {
         var path = NutrixPaths.GetDownloaderResult(nameof(IleWazyDownloader));
-        foreach (var filePath in Directory.GetFiles(path).OrderBy(File.GetLastWriteTime))
+        foreach (var filePath in Directory.GetFiles(path)
+            .Where(x => Path.GetFileName(x) != "DownloadHistory.json")
+            .OrderBy(File.GetLastWriteTime))
         {
             var fileName = Path.GetFileName(filePath);
             var content = File.ReadAllText(filePath);

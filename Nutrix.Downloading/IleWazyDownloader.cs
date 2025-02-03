@@ -1,4 +1,5 @@
 ﻿using HtmlAgilityPack;
+using Nutrix.Commons.ETL;
 using Nutrix.Commons.FileSystem;
 using System;
 using System.Diagnostics;
@@ -24,8 +25,11 @@ public class IleWazyDownloader
 
     public async Task Download()
     {
+        var history = DownloadHistory.CreateOrLoad(nameof(IleWazyDownloader));
+
         var lastPage = Directory.GetFiles(resultsPath)
             .Select(Path.GetFileName)
+            .Where(x => x != "DownloadHistory.json")
             .Select(x => x!.Split('_')[0])
             .Select(int.Parse)
             .OrderByDescending(x => x)
@@ -34,15 +38,18 @@ public class IleWazyDownloader
         var morePages = false;
         do
         {
-            morePages = await this.DownloadPage(lastPage);
+            morePages = await this.DownloadPage(lastPage, history);
             if (morePages)
             {
+                history.Save(nameof(IleWazyDownloader));
                 lastPage++;
             }
         } while (morePages);
+
+        history.Save(nameof(IleWazyDownloader));
     }
 
-    async Task<bool> DownloadPage(int page)
+    async Task<bool> DownloadPage(int page, DownloadHistory history)
     {
         var productsOnPage = await this.GetUrlsToProductsOnPage(page);
         if (productsOnPage.Length == 0)
@@ -52,15 +59,42 @@ public class IleWazyDownloader
 
         foreach (var productUrl in productsOnPage)
         {
-            await Task.Delay(delayMs);
             var name = productUrl.Replace("http://www.ilewazy.pl/", string.Empty);
+            var foundItem = history.Items.FirstOrDefault(x => x.ExternalId == name);
+            if (foundItem != null && !foundItem.ShouldTryDownload())
+            {
+                //skip if last change was too recently
+                continue;
+            }
 
             var sw = Stopwatch.StartNew();
             var content = await client!.GetStringAsync(productUrl);
             sw.Stop();
 
+            using var md5 = System.Security.Cryptography.MD5.Create();
+            var inputBytes = Encoding.ASCII.GetBytes(content);
+            var hashBytes = md5.ComputeHash(inputBytes);
+
+            var hash = Convert.ToHexString(hashBytes);
+
+            if (foundItem == null)
+            {
+                history.Items.Add(new DownloadHistoryItem(name, hash));
+            }
+            else if (foundItem.Hash == hash)
+            {
+                // skip if data don't changed
+                foundItem.LastDownloadAttempt = DateTime.Now;
+                continue;
+            }
+            else
+            {
+                foundItem.UpdateHash(hash);
+            }
+
             var fileName = $"{page}_{name}.html";
             File.WriteAllText(Path.Combine(resultsPath!, fileName), content);
+            await Task.Delay(delayMs);
         }
 
         var totalProducts = Directory.GetFiles(resultsPath).Length;
@@ -84,6 +118,7 @@ public class IleWazyDownloader
             .Select(this.RemoveDiacritics)
             .ToArray();
 
+        await Task.Delay(delayMs);
         return items;
     }
 
