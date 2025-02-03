@@ -20,8 +20,8 @@ public static class ServiceExtensions
             .Enrich.WithMachineName()
             .Enrich.WithProcessId()
             .Enrich.WithThreadId()
-            .WriteTo.OpenObserve("http://localhost:5080", "default", openObserveEmail, openObservePassword)
-            .MinimumLevel.Information()
+            .WriteTo.OpenObserve("http://localhost:5080", "default", openObserveEmail, openObservePassword).MinimumLevel.Information()
+            .WriteTo.Console().MinimumLevel.Information()
             .CreateLogger();
 
         builder.Logging.AddSerilog(Log.Logger);
