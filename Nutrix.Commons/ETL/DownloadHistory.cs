@@ -58,7 +58,7 @@ public record DownloadHistoryItem(string ExternalId, string Hash)
     public bool ShouldTryDownload()
     {
         //if content never changed
-        //time is 2x more than time between last attempt and last found change
+        //time is 2x more than time between last attempt and first download
         //check changes
         if (this.TotalModifications == 0)
         {
@@ -67,7 +67,7 @@ public record DownloadHistoryItem(string ExternalId, string Hash)
 
         //if download is 1 time per day
         //average content change is 1 time per week
-        //and there are more than week from last attempt
+        //and it's been over a week since the last attempt
         //check changes
         var avg = this.GetAverageModificationTimespan();
         var timeToLast = DateTime.Now - this.LastDownloadAttempt;
