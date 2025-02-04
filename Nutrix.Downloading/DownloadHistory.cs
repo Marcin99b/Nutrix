@@ -2,33 +2,34 @@
 using Nutrix.Commons.FileSystem;
 
 namespace Nutrix.Downloading;
-public record DownloadHistory
+
+public class DownloadHistoryFactory(NutrixPaths nutrixPaths)
 {
-    public List<DownloadHistoryItem> Items { get; } = [];
-    public DateTime LastDownload { get; private set; } = default;
-
-    private DownloadHistory()
+    public DownloadHistory CreateOrLoad(string downloaderName)
     {
-    }
-
-    public DownloadHistoryItem? Get(string externalId) => this.Items.FirstOrDefault(x => x.ExternalId == externalId);
-
-    public static DownloadHistory CreateOrLoad(string downloaderName)
-    {
-        var path = Path.Combine(NutrixPaths.GetDownloaderResult(downloaderName), "DownloadHistory.json");
+        var path = Path.Combine(nutrixPaths.GetDownloaderResult(downloaderName), "DownloadHistory.json");
         if (!File.Exists(path))
         {
-            return new DownloadHistory();
+            return new DownloadHistory(nutrixPaths);
         }
 
         var content = File.ReadAllText(path);
         return JsonConvert.DeserializeObject<DownloadHistory>(content)!;
     }
+}
+
+public class DownloadHistory(NutrixPaths nutrixPaths)
+{
+    public List<DownloadHistoryItem> Items { get; } = [];
+    public DateTime LastDownload { get; private set; } = default;
+
+    public DownloadHistoryItem? Get(string externalId) 
+        => this.Items.FirstOrDefault(x => x.ExternalId == externalId);
 
     public void Save(string downloaderName)
     {
         this.LastDownload = DateTime.Now;
-        var path = Path.Combine(NutrixPaths.GetDownloaderResult(downloaderName), "DownloadHistory.json");
+        var path = Path.Combine(nutrixPaths.GetDownloaderResult(downloaderName), "DownloadHistory.json");
         var json = JsonConvert.SerializeObject(this, Formatting.Indented);
         File.WriteAllText(path, json);
     }

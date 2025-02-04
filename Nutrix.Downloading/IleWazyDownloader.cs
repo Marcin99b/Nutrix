@@ -4,13 +4,14 @@ using Nutrix.Commons.FileSystem;
 using Nutrix.Logging;
 
 namespace Nutrix.Downloading;
-public class IleWazyDownloader(int delayMs, EventLogger eventLogger, ETLStorage storage)
+public class IleWazyDownloader(EventLogger eventLogger, ETLStorage storage, DownloadHistoryFactory downloadHistoryFactory)
 {
+    private readonly int delayMs = 200;
     private readonly HttpClient client = new();
 
     public async Task Download()
     {
-        var history = DownloadHistory.CreateOrLoad(nameof(IleWazyDownloader));
+        var history = downloadHistoryFactory.CreateOrLoad(nameof(IleWazyDownloader));
         var lastPage = storage.GetLastPage(nameof(IleWazyDownloader));
 
         eventLogger.Downloader_Started(nameof(IleWazyDownloader), lastPage);
@@ -37,7 +38,7 @@ public class IleWazyDownloader(int delayMs, EventLogger eventLogger, ETLStorage 
             return false;
         }
 
-        await Task.Delay(delayMs);
+        await Task.Delay(this.delayMs);
 
         var productsDownloaded = 0;
         var productsSaved = 0;
@@ -52,7 +53,7 @@ public class IleWazyDownloader(int delayMs, EventLogger eventLogger, ETLStorage 
                     productsSaved++;
                 }
 
-                await Task.Delay(delayMs);
+                await Task.Delay(this.delayMs);
             }
         }
 

@@ -1,10 +1,10 @@
 ﻿using System.Reflection;
 
 namespace Nutrix.Commons.FileSystem;
-public static class NutrixPaths
+public class NutrixPaths(FileSystemProvider fileSystem)
 {
-    private static readonly string assemblyPath = Path.GetDirectoryName(Assembly.GetEntryAssembly()!.Location)!;
+    private readonly string assemblyPath = fileSystem.GetDirectoryName(Assembly.GetEntryAssembly()!.Location)!;
 
-    public static string GetDownloaderResult(string downloaderName)
-        => Path.Combine(assemblyPath, "DownloadResults", downloaderName);
+    public string GetDownloaderResult(string downloaderName)
+        => fileSystem.Combine(this.assemblyPath, "DownloadResults", downloaderName);
 }

@@ -1,17 +1,15 @@
-﻿using System.IO;
-
-namespace Nutrix.Commons.FileSystem;
-public class ETLStorage
+﻿namespace Nutrix.Commons.FileSystem;
+public class ETLStorage(NutrixPaths nutrixPaths, FileSystemProvider fileSystem)
 {
     public int GetLastPage(string downloaderName)
     {
-        var resultsPath = NutrixPaths.GetDownloaderResult(downloaderName);
-        if (!Directory.Exists(resultsPath))
+        var resultsPath = nutrixPaths.GetDownloaderResult(downloaderName);
+        if (!fileSystem.Exists(resultsPath))
         {
-            _ = Directory.CreateDirectory(resultsPath);
+            fileSystem.CreateDirectory(resultsPath);
         }
 
-        var lastPage = Directory.GetFiles(resultsPath)
+        var lastPage = fileSystem.GetFiles(resultsPath)
             .Select(Path.GetFileName)
             .Where(x => x != "DownloadHistory.json")
             .Select(x => x!.Split('_')[0])
@@ -23,24 +21,24 @@ public class ETLStorage
 
     public void Save(string downloaderName, int page, string externalId, string content)
     {
-        var resultsPath = NutrixPaths.GetDownloaderResult(downloaderName);
-        if (!Directory.Exists(resultsPath))
+        var resultsPath = nutrixPaths.GetDownloaderResult(downloaderName);
+        if (!fileSystem.Exists(resultsPath))
         {
-            _ = Directory.CreateDirectory(resultsPath);
+            fileSystem.CreateDirectory(resultsPath);
         }
 
         var fileName = $"{page}_{externalId}.html";
-        File.WriteAllText(Path.Combine(resultsPath, fileName), content);
+        fileSystem.WriteAllText(fileSystem.Combine(resultsPath, fileName), content);
     }
 
     public IEnumerable<string> GetFilesToImport(string downloaderName) 
     {
-        var resultsPath = NutrixPaths.GetDownloaderResult(downloaderName);
-        if (!Directory.Exists(resultsPath))
+        var resultsPath = nutrixPaths.GetDownloaderResult(downloaderName);
+        if (!fileSystem.Exists(resultsPath))
         {
-            _ = Directory.CreateDirectory(resultsPath);
+            fileSystem.CreateDirectory(resultsPath);
         }
 
-        return Directory.GetFiles(resultsPath).Where(x => Path.GetFileName(x) != "DownloadHistory.json");
+        return fileSystem.GetFiles(resultsPath).Where(x => fileSystem.GetFileName(x) != "DownloadHistory.json");
     }
 }

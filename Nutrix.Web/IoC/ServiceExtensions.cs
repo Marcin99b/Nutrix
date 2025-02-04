@@ -48,9 +48,12 @@ public static class ServiceExtensions
     public static WebApplicationBuilder SetupETL(this WebApplicationBuilder builder)
     {
         builder.Services.AddSingleton<ETLStorage>();
-        builder.Services.AddSingleton(x => new IleWazyDownloader(200, x.GetService<EventLogger>()!, x.GetService<ETLStorage>()!));
+        builder.Services.AddSingleton<IleWazyDownloader>();
         builder.Services.AddSingleton<IleWazyImporter>();
         builder.Services.AddSingleton<ETLManager>();
+        builder.Services.AddSingleton<NutrixPaths>();
+        builder.Services.AddSingleton<FileSystemProvider>();
+        builder.Services.AddSingleton<DownloadHistoryFactory>();
 
         return builder;
     }
