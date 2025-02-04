@@ -3,35 +3,45 @@ using Nutrix.Commons.FileSystem;
 
 namespace Nutrix.Downloading;
 
-public class DownloadHistoryFactory(NutrixPaths nutrixPaths)
+public class DownloadHistoryFactory(NutrixPaths nutrixPaths, FileSystemProvider fileSystem)
 {
     public DownloadHistory CreateOrLoad(string downloaderName)
     {
-        var path = Path.Combine(nutrixPaths.GetDownloaderResult(downloaderName), "DownloadHistory.json");
-        if (!File.Exists(path))
+        var path = fileSystem.Combine(nutrixPaths.GetDownloaderResult(downloaderName), "DownloadHistory.json");
+        if (!fileSystem.Exists(path))
         {
-            return new DownloadHistory(nutrixPaths);
+            return new DownloadHistory().Setup(nutrixPaths, fileSystem);
         }
 
         var content = File.ReadAllText(path);
-        return JsonConvert.DeserializeObject<DownloadHistory>(content)!;
+        return JsonConvert.DeserializeObject<DownloadHistory>(content)!.Setup(nutrixPaths, fileSystem);
     }
 }
 
-public class DownloadHistory(NutrixPaths nutrixPaths)
+public class DownloadHistory
 {
+    private NutrixPaths? nutrixPaths;
+    private FileSystemProvider? fileSystem;
+
     public List<DownloadHistoryItem> Items { get; } = [];
     public DateTime LastDownload { get; private set; } = default;
 
     public DownloadHistoryItem? Get(string externalId) 
         => this.Items.FirstOrDefault(x => x.ExternalId == externalId);
 
+    internal DownloadHistory Setup(NutrixPaths nutrixPaths, FileSystemProvider fileSystem)
+    {
+        this.nutrixPaths = nutrixPaths;
+        this.fileSystem = fileSystem;
+        return this;
+    }
+
     public void Save(string downloaderName)
     {
         this.LastDownload = DateTime.Now;
-        var path = Path.Combine(nutrixPaths.GetDownloaderResult(downloaderName), "DownloadHistory.json");
+        var path = this.fileSystem!.Combine(this.nutrixPaths!.GetDownloaderResult(downloaderName), "DownloadHistory.json");
         var json = JsonConvert.SerializeObject(this, Formatting.Indented);
-        File.WriteAllText(path, json);
+        this.fileSystem!.WriteAllText(path, json);
     }
 }
 
