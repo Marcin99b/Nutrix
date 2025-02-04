@@ -44,16 +44,23 @@ public class IleWazyDownloader(EventLogger eventLogger, ETLStorage storage, Down
         var productsSaved = 0;
         foreach (var productUrl in productsOnPage)
         {
-            var (isDownloaded, isSaved) = await this.TrySaveProduct(history, page, productUrl);
-            if (isDownloaded)
+            try
             {
-                productsDownloaded++;
-                if (isSaved)
+                var (isDownloaded, isSaved) = await this.TrySaveProduct(history, page, productUrl);
+                if (isDownloaded)
                 {
-                    productsSaved++;
-                }
+                    productsDownloaded++;
+                    if (isSaved)
+                    {
+                        productsSaved++;
+                    }
 
-                await Task.Delay(this.delayMs);
+                    await Task.Delay(this.delayMs);
+                }
+            }
+            catch (Exception ex)
+            {
+                eventLogger.Downloader_Exception(nameof(IleWazyDownloader), page, productUrl, ex);
             }
         }
 

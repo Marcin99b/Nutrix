@@ -13,6 +13,9 @@ public class EventLogger(Serilog.ILogger logger)
         => this.Info(nameof(Downloader_DownloadedPage), 
             new { DownloaderName = downloaderName, Page = page, ProductsOnPage = productsOnPage, ProductsDownloaded = productsDownloaded, ProductsSaved = productsSaved });
 
+    public void Downloader_Exception(string downloaderName, int page, string url, Exception ex)
+        => this.Err(nameof(Downloader_Exception), new { DownloaderName = downloaderName, Page = page, Url = url, Exception = ex });
+
     public void Importer_Started(string importerName, int filesToImport)
         => this.Info(nameof(Importer_Started), new { ImporterName = importerName, FilesToImport = filesToImport });
 
