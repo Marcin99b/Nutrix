@@ -1,7 +1,7 @@
 ﻿namespace Nutrix.Logging;
 public class EventLogger(Serilog.ILogger logger)
 {
-    private const string LOG_TEMPLATE = "{Event} {Payload}";
+    private const string LOG_TEMPLATE = "{Event} {@Payload}";
 
     public void Downloader_Started(string downloaderName, int startingPage)
         => this.Info(nameof(Downloader_Started), new { DownloaderName = downloaderName, StartingPage = startingPage });
