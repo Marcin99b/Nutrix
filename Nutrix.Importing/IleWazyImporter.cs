@@ -21,30 +21,27 @@ public class IleWazyImporter(EventLogger eventLogger, ETLStorage storage)
                 break;
             }
 
-            bool exception = false;
             try
             {
                 var fileName = Path.GetFileName(path);
                 var content = File.ReadAllText(path);
                 var product = this.ImportProduct(fileName, content);
+                if (ct.IsCancellationRequested)
+                {
+                    break;
+                }
+
                 await addOrUpdateProcedure.Execute(product);
+                File.Delete(path);
+                filesImported++;
             }
             catch (Exception ex)
             {
-                exception = true;
                 eventLogger.Importer_Exception(nameof(IleWazyDownloader), path, ex);
-            }
-            finally
-            {
-                if (!exception)
-                {
-                    File.Delete(path);
-                    filesImported++;
-                }
             }
         }
 
-        eventLogger.Importer_Finished(nameof(IleWazyDownloader), filesToImport.Length, filesImported);
+        eventLogger.Importer_Finished(nameof(IleWazyDownloader), filesToImport.Length, filesImported, ct.IsCancellationRequested);
     }
 
     private AddOrUpdateProductInput ImportProduct(string filename, string content)

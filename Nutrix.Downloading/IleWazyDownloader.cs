@@ -17,22 +17,17 @@ public class IleWazyDownloader(EventLogger eventLogger, ETLStorage storage, Down
         eventLogger.Downloader_Started(nameof(IleWazyDownloader), lastPage);
 
         var morePages = true;
-        while (morePages)
+        while (morePages && !ct.IsCancellationRequested)
         {
-            if (ct.IsCancellationRequested)
-            {
-                break;
-            }
-
             morePages = await this.DownloadPage(lastPage, history, ct);
             history.Save(nameof(IleWazyDownloader));
-            if (morePages)
+            if (morePages && !ct.IsCancellationRequested)
             {
                 lastPage++;
             }
         }
 
-        eventLogger.Downloader_Finished(nameof(IleWazyDownloader), lastPage - 1);
+        eventLogger.Downloader_Finished(nameof(IleWazyDownloader), lastPage - (ct.IsCancellationRequested ? 0 : 1), ct.IsCancellationRequested);
     }
 
     private async Task<bool> DownloadPage(int page, DownloadHistory history, CancellationToken ct)

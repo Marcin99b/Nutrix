@@ -6,8 +6,8 @@ public class EventLogger(Serilog.ILogger logger)
     public void Downloader_Started(string downloaderName, int startingPage)
         => this.Info(nameof(Downloader_Started), new { DownloaderName = downloaderName, StartingPage = startingPage });
 
-    public void Downloader_Finished(string downloaderName, int endingPage)
-        => this.Info(nameof(Downloader_Finished), new { DownloaderName = downloaderName, EndingPage = endingPage });
+    public void Downloader_Finished(string downloaderName, int endingPage, bool isCancelled)
+        => this.Info(nameof(Downloader_Finished), new { DownloaderName = downloaderName, EndingPage = endingPage, IsCancelled = isCancelled });
     
     public void Downloader_DownloadedPage(string downloaderName, int page, int productsOnPage, int productsDownloaded, int productsSaved)
         => this.Info(nameof(Downloader_DownloadedPage), 
@@ -19,8 +19,8 @@ public class EventLogger(Serilog.ILogger logger)
     public void Importer_Started(string importerName, int filesToImport)
         => this.Info(nameof(Importer_Started), new { ImporterName = importerName, FilesToImport = filesToImport });
 
-    public void Importer_Finished(string importerName, int filesToImport, int filesImported)
-        => this.Info(nameof(Importer_Finished), new { ImporterName = importerName, FilesToImport = filesToImport, FilesImported = filesImported });
+    public void Importer_Finished(string importerName, int filesToImport, int filesImported, bool isCancelled)
+        => this.Info(nameof(Importer_Finished), new { ImporterName = importerName, FilesToImport = filesToImport, FilesImported = filesImported, IsCancelled = isCancelled });
 
     public void Importer_Exception(string importerName, string path, Exception ex)
         => this.Err(nameof(Importer_Exception), new { ImporterName = importerName, Path = path, Exception = ex });
