@@ -5,26 +5,45 @@ using Nutrix.Downloading;
 using Nutrix.Logging;
 
 namespace Nutrix.Importing;
-public class IleWazyImporter
+public class IleWazyImporter(EventLogger eventLogger, ETLStorage storage)
 {
-    private readonly HttpClient client = new();
-    private readonly string resultsPath = NutrixPaths.GetDownloaderResult(nameof(IleWazyDownloader));
-    private readonly EventLogger eventLogger;
-
-    public IleWazyImporter(EventLogger eventLogger)
+    public async Task Import()
     {
-        if (!Directory.Exists(this.resultsPath))
+        var filesToImport = storage.GetFilesToImport(nameof(IleWazyDownloader)).ToArray();
+        eventLogger.Importer_Started(nameof(IleWazyDownloader), filesToImport.Length);
+
+        var addOrUpdateProcedure = new AddOrUpdateProductProcedure();
+        var filesImported = 0;
+        foreach (var path in filesToImport)
         {
-            _ = Directory.CreateDirectory(this.resultsPath);
+            bool exception = false;
+            try
+            {
+                var fileName = Path.GetFileName(path);
+                var content = File.ReadAllText(path);
+                var product = this.ImportProduct(fileName, content);
+                await addOrUpdateProcedure.Execute(product);
+            }
+            catch (Exception ex)
+            {
+                exception = true;
+                eventLogger.Importer_Exception(nameof(IleWazyDownloader), path, ex);
+            }
+            finally
+            {
+                if (!exception)
+                {
+                    File.Delete(path);
+                    filesImported++;
+                }
+            }
         }
 
-        this.eventLogger = eventLogger;
+        eventLogger.Importer_Finished(nameof(IleWazyDownloader), filesToImport.Length, filesImported);
     }
 
-    public async Task Import(string filename, string content)
+    private AddOrUpdateProductInput ImportProduct(string filename, string content)
     {
-        var addOrUpdateProcedure = new AddOrUpdateProductProcedure();
-
         var html = new HtmlDocument();
         html.LoadHtml(content);
         var name = html.DocumentNode.SelectSingleNode("//h1[contains(@class, 'weighting-title')]").InnerText.Trim();
@@ -65,7 +84,6 @@ public class IleWazyImporter
             values.First(x => x.Name.Contains("Węglowodany")).Value,
             values.First(x => x.Name.Contains("Błonnik")).Value);
 
-        await addOrUpdateProcedure.Execute(product);
-
+        return product;
     }
 }

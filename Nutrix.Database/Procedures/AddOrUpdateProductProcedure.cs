@@ -19,6 +19,7 @@ public class AddOrUpdateProductProcedure
         var connectionString = "Host=localhost;Username=postgres;Database=postgres";
         await using var dataSource = NpgsqlDataSource.Create(connectionString);
 
+        //TODO database procedure
         var query = $@"
         DO $$
         BEGIN
