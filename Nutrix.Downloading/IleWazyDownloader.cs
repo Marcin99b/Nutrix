@@ -9,7 +9,7 @@ public class IleWazyDownloader(EventLogger eventLogger, ETLStorage storage, Down
     private readonly int delayMs = 200;
     private readonly HttpClient client = new();
 
-    public async Task Download()
+    public async Task Download(CancellationToken ct)
     {
         var history = downloadHistoryFactory.CreateOrLoad(nameof(IleWazyDownloader));
         var lastPage = storage.GetLastPage(nameof(IleWazyDownloader));
@@ -19,7 +19,12 @@ public class IleWazyDownloader(EventLogger eventLogger, ETLStorage storage, Down
         var morePages = true;
         while (morePages)
         {
-            morePages = await this.DownloadPage(lastPage, history);
+            if (ct.IsCancellationRequested)
+            {
+                break;
+            }
+
+            morePages = await this.DownloadPage(lastPage, history, ct);
             history.Save(nameof(IleWazyDownloader));
             if (morePages)
             {
@@ -30,7 +35,7 @@ public class IleWazyDownloader(EventLogger eventLogger, ETLStorage storage, Down
         eventLogger.Downloader_Finished(nameof(IleWazyDownloader), lastPage - 1);
     }
 
-    private async Task<bool> DownloadPage(int page, DownloadHistory history)
+    private async Task<bool> DownloadPage(int page, DownloadHistory history, CancellationToken ct)
     {
         var productsOnPage = await this.GetUrlsToProductsOnPage(page);
         if (productsOnPage.Length == 0)
@@ -46,6 +51,11 @@ public class IleWazyDownloader(EventLogger eventLogger, ETLStorage storage, Down
         {
             try
             {
+                if (ct.IsCancellationRequested)
+                {
+                    break;
+                }
+
                 var (isDownloaded, isSaved) = await this.TrySaveProduct(history, page, productUrl);
                 if (isDownloaded)
                 {

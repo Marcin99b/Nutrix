@@ -7,7 +7,7 @@ using Nutrix.Logging;
 namespace Nutrix.Importing;
 public class IleWazyImporter(EventLogger eventLogger, ETLStorage storage)
 {
-    public async Task Import()
+    public async Task Import(CancellationToken ct)
     {
         var filesToImport = storage.GetFilesToImport(nameof(IleWazyDownloader)).ToArray();
         eventLogger.Importer_Started(nameof(IleWazyDownloader), filesToImport.Length);
@@ -16,6 +16,11 @@ public class IleWazyImporter(EventLogger eventLogger, ETLStorage storage)
         var filesImported = 0;
         foreach (var path in filesToImport)
         {
+            if (ct.IsCancellationRequested)
+            {
+                break;
+            }
+
             bool exception = false;
             try
             {

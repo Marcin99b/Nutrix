@@ -20,7 +20,7 @@ public static class ServiceExtensions
             .Enrich.WithMachineName()
             .Enrich.WithProcessId()
             .Enrich.WithThreadId()
-            .WriteTo.OpenObserve("http://localhost:5080", "logs", openObserveEmail, openObservePassword).MinimumLevel.Information()
+            .WriteTo.OpenObserve("http://localhost:5080", "default", openObserveEmail, openObservePassword, "logs").MinimumLevel.Information()
             .WriteTo.Console().MinimumLevel.Information()
             .CreateLogger();
 
@@ -35,7 +35,7 @@ public static class ServiceExtensions
     {
         builder.Services
             .AddHangfire(configuration => configuration
-            //.UseSerilogLogProvider()
+            .UseSerilogLogProvider()
             .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
             .UseSimpleAssemblyNameTypeSerializer()
             .UseRecommendedSerializerSettings()
