@@ -13,7 +13,7 @@ public class SearchProductProcedure(IDbContextFactory<DatabaseContext> dbContext
         using var ctx = await dbContextFactory.CreateDbContextAsync();
 
         var products = await ctx.FoodProducts
-            .Where(x => x.Name.Contains(input.Query, StringComparison.InvariantCultureIgnoreCase))
+            .Where(x => x.Name.ToLower().Contains(input.Query.ToLower()))
             .ToListAsync();
 
         return new SearchProductOutput(products);
