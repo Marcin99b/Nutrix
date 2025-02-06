@@ -38,11 +38,11 @@ app.MapGet("/search", async ([FromQuery] string q) =>
     .Select(x => new FoodProductDto(
         x.Id, 
         x.Name, 
-        x.Kcal1000g / 10, 
-        x.Proteins1000g / 10, 
-        x.Fats1000g / 10, 
-        x.Carbs1000g / 10, 
-        x.Fiber1000g / 10));
+        Convert.ToDecimal(x.Kcal1000g) / 10,
+        Convert.ToDecimal(x.Proteins1000g) / 10,
+        Convert.ToDecimal(x.Fats1000g) / 10,
+        Convert.ToDecimal(x.Carbs1000g) / 10,
+        Convert.ToDecimal(x.Fiber1000g) / 10));
 });
 
 var jobsClient = app!.Services.GetService<IRecurringJobManagerV2>()!;
