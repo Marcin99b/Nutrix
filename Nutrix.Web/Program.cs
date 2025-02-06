@@ -23,13 +23,12 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     _ = app.UseSwagger().UseSwaggerUI();
+    app.UseHangfireDashboard();
 }
 
 app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
-
-app.UseHangfireDashboard();
 
 app.MapGet("/search", async ([FromQuery] string q, SearchProductProcedure procedure, CancellationToken ct) =>
     (await procedure.Execute(new SearchProductInput(q), ct))
