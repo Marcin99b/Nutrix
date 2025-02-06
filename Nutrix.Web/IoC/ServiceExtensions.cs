@@ -1,6 +1,9 @@
 ﻿using Hangfire;
 using Hangfire.MemoryStorage;
+using Microsoft.EntityFrameworkCore;
 using Nutrix.Commons.FileSystem;
+using Nutrix.Database;
+using Nutrix.Database.Procedures;
 using Nutrix.Downloading;
 using Nutrix.Importing;
 using Nutrix.Logging;
@@ -54,6 +57,16 @@ public static class ServiceExtensions
         builder.Services.AddSingleton<NutrixPaths>();
         builder.Services.AddSingleton<FileSystemProvider>();
         builder.Services.AddSingleton<DownloadHistoryFactory>();
+
+        return builder;
+    }
+
+    public static WebApplicationBuilder SetupDatabase(this WebApplicationBuilder builder)
+    {
+        builder.Services.AddDbContextFactory<DatabaseContext>(options =>
+            options.UseNpgsql($"Host=localhost;Username=postgres;Database=postgres"));
+        builder.Services.AddSingleton<SearchProductProcedure>();
+        builder.Services.AddSingleton<AddOrUpdateProductProcedure>();
 
         return builder;
     }

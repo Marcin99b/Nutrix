@@ -13,16 +13,12 @@ var builder = WebApplication.CreateBuilder(args);
 builder
     .SetupLogging()
     .SetupHangfire()
-    .SetupETL();
-
-builder.Services.AddDbContextFactory<DatabaseContext>(options =>
-  options.UseNpgsql($"Host=localhost;Username=postgres;Database=postgres"));
+    .SetupETL()
+    .SetupDatabase();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddSingleton<SearchProductProcedure>();
-builder.Services.AddSingleton<AddOrUpdateProductProcedure>();
 
 var app = builder.Build();
 
