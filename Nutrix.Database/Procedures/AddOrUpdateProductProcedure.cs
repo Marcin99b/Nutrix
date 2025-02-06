@@ -19,8 +19,8 @@ public class AddOrUpdateProductProcedure(IDbContextFactory<DatabaseContext> dbCo
     {
         using var ctx = await dbContextFactory.CreateDbContextAsync(ct);
 
-        var product = new FoodProduct() 
-        { 
+        var product = new FoodProduct()
+        {
             Source = input.Source,
             ExternalId = input.ExternalId,
             Name = input.Name,
@@ -31,7 +31,18 @@ public class AddOrUpdateProductProcedure(IDbContextFactory<DatabaseContext> dbCo
             Fiber1000g = input.Fiber1000g
         };
 
-        await ctx.FoodProducts.AddAsync(product, ct);
+        var found = await ctx.FoodProducts.FirstOrDefaultAsync(x => x.Source == input.Source && x.ExternalId == input.ExternalId);
+        if (found == null)
+        {
+            
+            await ctx.FoodProducts.AddAsync(product, ct);
+        }
+        else
+        {
+            product.Id = found.Id;
+            ctx.FoodProducts.Update(product);
+        }
+
         await ctx.SaveChangesAsync(ct);
     }
 }
