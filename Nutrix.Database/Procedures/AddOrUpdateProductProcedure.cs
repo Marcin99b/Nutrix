@@ -15,9 +15,9 @@ public record AddOrUpdateProductInput(
 
 public class AddOrUpdateProductProcedure(IDbContextFactory<DatabaseContext> dbContextFactory)
 {
-    public async Task Execute(AddOrUpdateProductInput input)
+    public async Task Execute(AddOrUpdateProductInput input, CancellationToken ct)
     {
-        using var ctx = await dbContextFactory.CreateDbContextAsync();
+        using var ctx = await dbContextFactory.CreateDbContextAsync(ct);
 
         var product = new FoodProduct() 
         { 
@@ -31,8 +31,7 @@ public class AddOrUpdateProductProcedure(IDbContextFactory<DatabaseContext> dbCo
             Fiber1000g = input.Fiber1000g
         };
 
-        await ctx.FoodProducts.AddAsync(product);
-
-        await ctx.SaveChangesAsync();
+        await ctx.FoodProducts.AddAsync(product, ct);
+        await ctx.SaveChangesAsync(ct);
     }
 }

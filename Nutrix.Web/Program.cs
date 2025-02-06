@@ -37,8 +37,8 @@ app.MapControllers();
 
 app.UseHangfireDashboard();
 
-app.MapGet("/search", async ([FromQuery] string q, SearchProductProcedure procedure) => 
-    (await procedure.Execute(new SearchProductInput(q)))
+app.MapGet("/search", async ([FromQuery] string q, SearchProductProcedure procedure, CancellationToken ct) => 
+    (await procedure.Execute(new SearchProductInput(q), ct))
     .Products
     .Select(x => new FoodProductDto(
         x.Id, 

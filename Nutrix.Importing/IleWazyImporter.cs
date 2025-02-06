@@ -30,7 +30,7 @@ public class IleWazyImporter(EventLogger eventLogger, ETLStorage storage, AddOrU
                     break;
                 }
 
-                await addOrUpdateProcedure.Execute(product);
+                await addOrUpdateProcedure.Execute(product, ct);
                 File.Delete(path);
                 filesImported++;
             }
