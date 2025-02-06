@@ -1,12 +1,17 @@
-﻿namespace Nutrix.Database.Models;
+﻿using System.ComponentModel.DataAnnotations;
 
-public record FoodProduct(
-    int Id,
-    string Source,
-    string ExternalId,
-    string Name,
-    int Kcal1000g,
-    int Proteins1000g,
-    int Fats1000g,
-    int Carbs1000g,
-    int Fiber1000g);
+namespace Nutrix.Database.Models;
+
+public class FoodProduct
+{
+    [Key]
+    public int Id { get; set; }
+    public string Source { get; set; }
+    public string ExternalId { get; set; }
+    public string Name { get; set; }
+    public decimal Kcal1000g { get; set; }
+    public decimal Proteins1000g { get; set; }
+    public decimal Fats1000g { get; set; }
+    public decimal Carbs1000g { get; set; }
+    public decimal Fiber1000g { get; set; }
+}
