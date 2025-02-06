@@ -9,9 +9,9 @@ public class FoodProduct
     public string Source { get; set; }
     public string ExternalId { get; set; }
     public string Name { get; set; }
-    public decimal Kcal1000g { get; set; }
-    public decimal Proteins1000g { get; set; }
-    public decimal Fats1000g { get; set; }
-    public decimal Carbs1000g { get; set; }
-    public decimal Fiber1000g { get; set; }
+    public int Kcal1000g { get; set; }
+    public int Proteins1000g { get; set; }
+    public int Fats1000g { get; set; }
+    public int Carbs1000g { get; set; }
+    public int Fiber1000g { get; set; }
 }

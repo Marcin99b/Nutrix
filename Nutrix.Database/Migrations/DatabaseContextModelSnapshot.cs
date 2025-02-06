@@ -29,28 +29,28 @@ namespace Nutrix.Database.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<decimal>("Carbs1000g")
-                        .HasColumnType("numeric");
+                    b.Property<int>("Carbs1000g")
+                        .HasColumnType("integer");
 
                     b.Property<string>("ExternalId")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<decimal>("Fats1000g")
-                        .HasColumnType("numeric");
+                    b.Property<int>("Fats1000g")
+                        .HasColumnType("integer");
 
-                    b.Property<decimal>("Fiber1000g")
-                        .HasColumnType("numeric");
+                    b.Property<int>("Fiber1000g")
+                        .HasColumnType("integer");
 
-                    b.Property<decimal>("Kcal1000g")
-                        .HasColumnType("numeric");
+                    b.Property<int>("Kcal1000g")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<decimal>("Proteins1000g")
-                        .HasColumnType("numeric");
+                    b.Property<int>("Proteins1000g")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Source")
                         .IsRequired()

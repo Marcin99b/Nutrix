@@ -1,5 +1,7 @@
 using Hangfire;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Nutrix.Database;
 using Nutrix.Database.Procedures;
 using Nutrix.Downloading;
 using Nutrix.Importing;
@@ -12,6 +14,9 @@ builder
     .SetupLogging()
     .SetupHangfire()
     .SetupETL();
+
+builder.Services.AddDbContext<DatabaseContext>(options =>
+  options.UseNpgsql($"Host=localhost;Username=postgres;Database=postgres"));
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -30,8 +35,8 @@ app.MapControllers();
 
 app.UseHangfireDashboard();
 
-var searchProducts = (string query) => new SearchProductProcedure().Execute(new SearchProductInput(query));
-app.MapGet("/search", async ([FromQuery] string q) => (await searchProducts(q))
+app.MapGet("/search", async ([FromQuery] string q, SearchProductProcedure procedure) => 
+    (await procedure.Execute(new SearchProductInput(q)))
     .Products
     .Select(x => new FoodProductDto(
         x.Id, 
