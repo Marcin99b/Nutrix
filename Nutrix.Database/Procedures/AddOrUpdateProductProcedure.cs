@@ -13,10 +13,12 @@ public record AddOrUpdateProductInput(
     int Carbs1000g,
     int Fiber1000g);
 
-public class AddOrUpdateProductProcedure(DatabaseContext context)
+public class AddOrUpdateProductProcedure
 {
     public async Task Execute(AddOrUpdateProductInput input)
     {
+        using var ctx = new DatabaseContext();
+
         var product = new FoodProduct() 
         { 
             Source = input.Source,
@@ -29,6 +31,8 @@ public class AddOrUpdateProductProcedure(DatabaseContext context)
             Fiber1000g = input.Fiber1000g
         };
 
-        await context.FoodProducts.AddAsync(product);
+        await ctx.FoodProducts.AddAsync(product);
+
+        await ctx.SaveChangesAsync();
     }
 }

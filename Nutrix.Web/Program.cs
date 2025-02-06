@@ -21,6 +21,8 @@ builder.Services.AddDbContext<DatabaseContext>(options =>
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddSingleton<SearchProductProcedure>();
+builder.Services.AddSingleton<AddOrUpdateProductProcedure>();
 
 var app = builder.Build();
 

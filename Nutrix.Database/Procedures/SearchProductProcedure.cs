@@ -7,11 +7,13 @@ namespace Nutrix.Database.Procedures;
 public record SearchProductInput(string Query);
 public record SearchProductOutput(IEnumerable<FoodProduct> Products);
 
-public class SearchProductProcedure(DatabaseContext context)
+public class SearchProductProcedure
 {
     public async Task<SearchProductOutput> Execute(SearchProductInput input)
     {
-        var products = await context.FoodProducts
+        using var ctx = new DatabaseContext();
+
+        var products = await ctx.FoodProducts
             .Where(x => x.Name.Contains(input.Query))
             .ToListAsync();
 
