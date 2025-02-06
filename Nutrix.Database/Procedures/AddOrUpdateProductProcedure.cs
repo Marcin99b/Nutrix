@@ -34,7 +34,6 @@ public class AddOrUpdateProductProcedure(IDbContextFactory<DatabaseContext> dbCo
         var found = await ctx.FoodProducts.FirstOrDefaultAsync(x => x.Source == input.Source && x.ExternalId == input.ExternalId);
         if (found == null)
         {
-            
             await ctx.FoodProducts.AddAsync(product, ct);
         }
         else
