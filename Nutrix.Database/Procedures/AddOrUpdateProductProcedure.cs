@@ -1,4 +1,4 @@
-﻿using Npgsql;
+﻿using Microsoft.EntityFrameworkCore;
 using Nutrix.Database.Models;
 
 namespace Nutrix.Database.Procedures;
@@ -13,11 +13,11 @@ public record AddOrUpdateProductInput(
     int Carbs1000g,
     int Fiber1000g);
 
-public class AddOrUpdateProductProcedure
+public class AddOrUpdateProductProcedure(IDbContextFactory<DatabaseContext> dbContextFactory)
 {
     public async Task Execute(AddOrUpdateProductInput input)
     {
-        using var ctx = new DatabaseContext();
+        using var ctx = await dbContextFactory.CreateDbContextAsync();
 
         var product = new FoodProduct() 
         { 

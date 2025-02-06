@@ -15,7 +15,7 @@ builder
     .SetupHangfire()
     .SetupETL();
 
-builder.Services.AddDbContext<DatabaseContext>(options =>
+builder.Services.AddDbContextFactory<DatabaseContext>(options =>
   options.UseNpgsql($"Host=localhost;Username=postgres;Database=postgres"));
 
 builder.Services.AddControllers();

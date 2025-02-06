@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Npgsql;
 using Nutrix.Database.Models;
 
 namespace Nutrix.Database.Procedures;
@@ -7,14 +6,14 @@ namespace Nutrix.Database.Procedures;
 public record SearchProductInput(string Query);
 public record SearchProductOutput(IEnumerable<FoodProduct> Products);
 
-public class SearchProductProcedure
+public class SearchProductProcedure(IDbContextFactory<DatabaseContext> dbContextFactory)
 {
     public async Task<SearchProductOutput> Execute(SearchProductInput input)
     {
-        using var ctx = new DatabaseContext();
+        using var ctx = await dbContextFactory.CreateDbContextAsync();
 
         var products = await ctx.FoodProducts
-            .Where(x => x.Name.Contains(input.Query))
+            .Where(x => x.Name.Contains(input.Query, StringComparison.InvariantCultureIgnoreCase))
             .ToListAsync();
 
         return new SearchProductOutput(products);
