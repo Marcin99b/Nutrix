@@ -30,10 +30,8 @@ app.MapControllers();
 
 app.UseHangfireDashboard();
 
-app.MapGet("/search", async ([FromQuery] string q) => 
-{
-    var results = await new SearchProductProcedure().Execute(new SearchProductInput(q));
-    return results
+var searchProducts = (string query) => new SearchProductProcedure().Execute(new SearchProductInput(query));
+app.MapGet("/search", async ([FromQuery] string q) => (await searchProducts(q))
     .Products
     .Select(x => new FoodProductDto(
         x.Id, 
@@ -42,8 +40,7 @@ app.MapGet("/search", async ([FromQuery] string q) =>
         Convert.ToDecimal(x.Proteins1000g) / 10,
         Convert.ToDecimal(x.Fats1000g) / 10,
         Convert.ToDecimal(x.Carbs1000g) / 10,
-        Convert.ToDecimal(x.Fiber1000g) / 10));
-});
+        Convert.ToDecimal(x.Fiber1000g) / 10)));
 
 var jobsClient = app!.Services.GetService<IRecurringJobManagerV2>()!;
 
