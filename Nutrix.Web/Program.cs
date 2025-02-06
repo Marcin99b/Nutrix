@@ -1,11 +1,9 @@
 using Hangfire;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Nutriinput.Web.Dtos;
-using Nutrix.Database;
 using Nutrix.Database.Procedures;
 using Nutrix.Downloading;
 using Nutrix.Importing;
+using Nutrix.Web.Dtos;
 using Nutrix.Web.IoC;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -33,7 +31,7 @@ app.MapControllers();
 
 app.UseHangfireDashboard();
 
-app.MapGet("/search", async ([FromQuery] string q, SearchProductProcedure procedure, CancellationToken ct) => 
+app.MapGet("/search", async ([FromQuery] string q, SearchProductProcedure procedure, CancellationToken ct) =>
     (await procedure.Execute(new SearchProductInput(q), ct))
     .Products.Select(FoodProductDto.FromModel));
 

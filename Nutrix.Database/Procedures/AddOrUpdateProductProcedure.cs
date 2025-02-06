@@ -34,14 +34,14 @@ public class AddOrUpdateProductProcedure(IDbContextFactory<DatabaseContext> dbCo
         var found = await ctx.FoodProducts.FirstOrDefaultAsync(x => x.Source == input.Source && x.ExternalId == input.ExternalId);
         if (found == null)
         {
-            await ctx.FoodProducts.AddAsync(product, ct);
+            _ = await ctx.FoodProducts.AddAsync(product, ct);
         }
         else
         {
             product.Id = found.Id;
-            ctx.FoodProducts.Update(product);
+            _ = ctx.FoodProducts.Update(product);
         }
 
-        await ctx.SaveChangesAsync(ct);
+        _ = await ctx.SaveChangesAsync(ct);
     }
 }

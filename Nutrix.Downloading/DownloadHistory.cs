@@ -26,7 +26,7 @@ public class DownloadHistory
     public List<DownloadHistoryItem> Items { get; } = [];
     public DateTime LastDownload { get; private set; } = default;
 
-    public DownloadHistoryItem? Get(string externalId) 
+    public DownloadHistoryItem? Get(string externalId)
         => this.Items.FirstOrDefault(x => x.ExternalId == externalId);
 
     internal DownloadHistory Setup(NutrixPaths nutrixPaths, FileSystemProvider fileSystem)

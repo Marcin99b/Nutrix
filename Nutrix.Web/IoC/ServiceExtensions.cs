@@ -15,7 +15,7 @@ public static class ServiceExtensions
 {
     public static WebApplicationBuilder SetupLogging(this WebApplicationBuilder builder)
     {
-        builder.Logging.ClearProviders();
+        _ = builder.Logging.ClearProviders();
         var openObserveEmail = Environment.GetEnvironmentVariable("openobserve_login", EnvironmentVariableTarget.User);
         var openObservePassword = Environment.GetEnvironmentVariable("openobserve_password", EnvironmentVariableTarget.User);
         Log.Logger = new LoggerConfiguration()
@@ -27,46 +27,46 @@ public static class ServiceExtensions
             .WriteTo.Console().MinimumLevel.Information()
             .CreateLogger();
 
-        builder.Logging.AddSerilog(Log.Logger);
-        builder.Services.AddSingleton(Log.Logger);
-        builder.Services.AddSingleton<EventLogger>();
+        _ = builder.Logging.AddSerilog(Log.Logger);
+        _ = builder.Services.AddSingleton(Log.Logger);
+        _ = builder.Services.AddSingleton<EventLogger>();
 
         return builder;
     }
 
     public static WebApplicationBuilder SetupHangfire(this WebApplicationBuilder builder)
     {
-        builder.Services
+        _ = builder.Services
             .AddHangfire(configuration => configuration
             .UseSerilogLogProvider()
             .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
             .UseSimpleAssemblyNameTypeSerializer()
             .UseRecommendedSerializerSettings()
             .UseMemoryStorage()); //todo db
-        builder.Services.AddHangfireServer();
+        _ = builder.Services.AddHangfireServer();
 
         return builder;
     }
 
     public static WebApplicationBuilder SetupETL(this WebApplicationBuilder builder)
     {
-        builder.Services.AddSingleton<ETLStorage>();
-        builder.Services.AddSingleton<IleWazyDownloader>();
-        builder.Services.AddSingleton<IleWazyImporter>();
-        builder.Services.AddSingleton<ETLManager>();
-        builder.Services.AddSingleton<NutrixPaths>();
-        builder.Services.AddSingleton<FileSystemProvider>();
-        builder.Services.AddSingleton<DownloadHistoryFactory>();
+        _ = builder.Services.AddSingleton<ETLStorage>();
+        _ = builder.Services.AddSingleton<IleWazyDownloader>();
+        _ = builder.Services.AddSingleton<IleWazyImporter>();
+        _ = builder.Services.AddSingleton<ETLManager>();
+        _ = builder.Services.AddSingleton<NutrixPaths>();
+        _ = builder.Services.AddSingleton<FileSystemProvider>();
+        _ = builder.Services.AddSingleton<DownloadHistoryFactory>();
 
         return builder;
     }
 
     public static WebApplicationBuilder SetupDatabase(this WebApplicationBuilder builder)
     {
-        builder.Services.AddDbContextFactory<DatabaseContext>(options =>
+        _ = builder.Services.AddDbContextFactory<DatabaseContext>(options =>
             options.UseNpgsql($"Host=localhost;Username=postgres;Database=postgres"));
-        builder.Services.AddSingleton<SearchProductProcedure>();
-        builder.Services.AddSingleton<AddOrUpdateProductProcedure>();
+        _ = builder.Services.AddSingleton<SearchProductProcedure>();
+        _ = builder.Services.AddSingleton<AddOrUpdateProductProcedure>();
 
         return builder;
     }

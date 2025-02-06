@@ -6,7 +6,7 @@ public class ETLStorage(NutrixPaths nutrixPaths, FileSystemProvider fileSystem)
         var resultsPath = nutrixPaths.GetDownloaderResult(downloaderName);
         if (!fileSystem.Exists(resultsPath))
         {
-            fileSystem.CreateDirectory(resultsPath);
+            _ = fileSystem.CreateDirectory(resultsPath);
         }
 
         var lastPage = fileSystem.GetFiles(resultsPath)
@@ -24,19 +24,19 @@ public class ETLStorage(NutrixPaths nutrixPaths, FileSystemProvider fileSystem)
         var resultsPath = nutrixPaths.GetDownloaderResult(downloaderName);
         if (!fileSystem.Exists(resultsPath))
         {
-            fileSystem.CreateDirectory(resultsPath);
+            _ = fileSystem.CreateDirectory(resultsPath);
         }
 
         var fileName = $"{page}_{externalId}.html";
         fileSystem.WriteAllText(fileSystem.Combine(resultsPath, fileName), content);
     }
 
-    public IEnumerable<string> GetFilesToImport(string downloaderName) 
+    public IEnumerable<string> GetFilesToImport(string downloaderName)
     {
         var resultsPath = nutrixPaths.GetDownloaderResult(downloaderName);
         if (!fileSystem.Exists(resultsPath))
         {
-            fileSystem.CreateDirectory(resultsPath);
+            _ = fileSystem.CreateDirectory(resultsPath);
         }
 
         return fileSystem.GetFiles(resultsPath).Where(x => fileSystem.GetFileName(x) != "DownloadHistory.json");

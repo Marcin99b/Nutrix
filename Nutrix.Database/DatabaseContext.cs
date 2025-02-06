@@ -1,7 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using Nutrix.Database.Models;
-using System;
 
 namespace Nutrix.Database;
 

@@ -8,9 +8,9 @@ public class EventLogger(Serilog.ILogger logger)
 
     public void Downloader_Finished(string downloaderName, int endingPage, bool isCancelled)
         => this.Info(nameof(Downloader_Finished), new { DownloaderName = downloaderName, EndingPage = endingPage, IsCancelled = isCancelled });
-    
+
     public void Downloader_DownloadedPage(string downloaderName, int page, int productsOnPage, int productsDownloaded, int productsSaved)
-        => this.Info(nameof(Downloader_DownloadedPage), 
+        => this.Info(nameof(Downloader_DownloadedPage),
             new { DownloaderName = downloaderName, Page = page, ProductsOnPage = productsOnPage, ProductsDownloaded = productsDownloaded, ProductsSaved = productsSaved });
 
     public void Downloader_Exception(string downloaderName, int page, string url, Exception ex)
