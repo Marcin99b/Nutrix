@@ -1,6 +1,9 @@
 using Hangfire;
+using Microsoft.AspNetCore.Mvc;
+using Nutrix.Database.Procedures;
 using Nutrix.Downloading;
 using Nutrix.Importing;
+using Nutrix.Web.Dtos;
 using Nutrix.Web.IoC;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -26,6 +29,21 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.UseHangfireDashboard();
+
+app.MapGet("/search", async ([FromQuery] string q) => 
+{
+    var results = await new SearchProductProcedure().Execute(new SearchProductInput(q));
+    return results
+    .Products
+    .Select(x => new FoodProductDto(
+        x.Id, 
+        x.Name, 
+        x.Kcal1000g / 10, 
+        x.Proteins1000g / 10, 
+        x.Fats1000g / 10, 
+        x.Carbs1000g / 10, 
+        x.Fiber1000g / 10));
+});
 
 var jobsClient = app!.Services.GetService<IRecurringJobManagerV2>()!;
 
