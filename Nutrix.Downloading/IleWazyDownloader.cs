@@ -1,22 +1,24 @@
 ﻿using HtmlAgilityPack;
 using Nutrix.Commons;
+using Nutrix.Commons.ETL;
 using Nutrix.Commons.FileSystem;
 using Nutrix.Logging;
+using System.Threading.Channels;
 
 namespace Nutrix.Downloading;
-public class IleWazyDownloader(EventLogger eventLogger, ETLStorage storage, DownloadHistoryFactory downloadHistoryFactory)
+public class IleWazyDownloader(EventLogger eventLogger, DownloadHistoryFactory downloadHistoryFactory, Channel<ImportRequest> channel)
 {
     private readonly int delayMs = 200;
     private readonly HttpClient client = new();
 
     public async Task Download(CancellationToken ct)
     {
-        var history = downloadHistoryFactory.CreateOrLoad(nameof(IleWazyDownloader));
-        var lastPage = storage.GetLastPage(nameof(IleWazyDownloader));
+        eventLogger.Downloader_Started(nameof(IleWazyDownloader));
 
-        eventLogger.Downloader_Started(nameof(IleWazyDownloader), lastPage);
+        var history = downloadHistoryFactory.CreateOrLoad(nameof(IleWazyDownloader));
 
         var morePages = true;
+        var lastPage = 1;
         while (morePages && !ct.IsCancellationRequested)
         {
             morePages = await this.DownloadPage(lastPage, history, ct);
@@ -51,7 +53,7 @@ public class IleWazyDownloader(EventLogger eventLogger, ETLStorage storage, Down
                     break;
                 }
 
-                var (isDownloaded, isSaved) = await this.TrySaveProduct(history, page, productUrl);
+                var (isDownloaded, isSaved) = await this.TrySaveProduct(history, productUrl);
                 if (isDownloaded)
                 {
                     productsDownloaded++;
@@ -96,7 +98,7 @@ public class IleWazyDownloader(EventLogger eventLogger, ETLStorage storage, Down
 
     private string GetPageUrl(int id) => $"http://www.ilewazy.pl/produkty/page/{id}/s/date/k/asc/".RemoveDiacritics();
 
-    private async Task<(bool Downloaded, bool Saved)> TrySaveProduct(DownloadHistory history, int page, string productUrl)
+    private async Task<(bool Downloaded, bool Saved)> TrySaveProduct(DownloadHistory history, string productUrl)
     {
         var externalId = productUrl.Replace("http://www.ilewazy.pl/", string.Empty);
         var historyItem = history.Get(externalId);
@@ -124,7 +126,7 @@ public class IleWazyDownloader(EventLogger eventLogger, ETLStorage storage, Down
             historyItem.UpdateHash(hash);
         }
 
-        storage.Save(nameof(IleWazyDownloader), page, externalId, content);
+        await channel.Writer.WriteAsync(new ImportRequest("www.ilewazy.pl", externalId, content));
         return (true, true);
     }
 

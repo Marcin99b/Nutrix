@@ -1,52 +1,14 @@
 ﻿using HtmlAgilityPack;
-using Nutrix.Commons.FileSystem;
+using Nutrix.Commons.ETL;
 using Nutrix.Database.Procedures;
-using Nutrix.Downloading;
-using Nutrix.Logging;
 
 namespace Nutrix.Importing;
-public class IleWazyImporter(EventLogger eventLogger, ETLStorage storage, AddOrUpdateProductProcedure addOrUpdateProcedure)
+public class IleWazyImporter
 {
-    public async Task Import(CancellationToken ct)
-    {
-        var filesToImport = storage.GetFilesToImport(nameof(IleWazyDownloader)).ToArray();
-        eventLogger.Importer_Started(nameof(IleWazyDownloader), filesToImport.Length);
-
-        var filesImported = 0;
-        foreach (var path in filesToImport)
-        {
-            if (ct.IsCancellationRequested)
-            {
-                break;
-            }
-
-            try
-            {
-                var fileName = Path.GetFileName(path);
-                var content = File.ReadAllText(path);
-                var product = this.ImportProduct(fileName, content);
-                if (ct.IsCancellationRequested)
-                {
-                    break;
-                }
-
-                await addOrUpdateProcedure.Execute(product, ct);
-                File.Delete(path);
-                filesImported++;
-            }
-            catch (Exception ex)
-            {
-                eventLogger.Importer_Exception(nameof(IleWazyDownloader), path, ex);
-            }
-        }
-
-        eventLogger.Importer_Finished(nameof(IleWazyDownloader), filesToImport.Length, filesImported, ct.IsCancellationRequested);
-    }
-
-    private AddOrUpdateProductInput ImportProduct(string filename, string content)
+    public AddOrUpdateProductInput Import(ImportRequest request)
     {
         var html = new HtmlDocument();
-        html.LoadHtml(content);
+        html.LoadHtml(request.Content);
         var name = html.DocumentNode.SelectSingleNode("//h1[contains(@class, 'weighting-title')]").InnerText.Trim();
         var table = html.DocumentNode.SelectSingleNode("//table[@id='ilewazy-ingedients']");
         html.LoadHtml(table.InnerHtml);
@@ -56,15 +18,8 @@ public class IleWazyImporter(EventLogger eventLogger, ETLStorage storage, AddOrU
         .Select(x =>
         {
             var text = x.ChildNodes[3].InnerText;
-            var trimmed = text.Trim(" ,gkcal\r\n\\b.d.".ToCharArray());
-            if (string.IsNullOrWhiteSpace(trimmed))
-            {
-                trimmed = "0";
-            }
-
-            trimmed = trimmed.Replace(',', '.');
-
-            var per100g = decimal.Parse(trimmed);
+            var trimmed = text.Trim(" ,gkcal\r\n\\b.d.".ToCharArray()).Replace(',', '.');
+            var per100g = string.IsNullOrWhiteSpace(trimmed) ? 0 : decimal.Parse(trimmed);
             var per1000g = Convert.ToInt32(per100g * 10);
             return new
             {
@@ -74,10 +29,9 @@ public class IleWazyImporter(EventLogger eventLogger, ETLStorage storage, AddOrU
 
         }).ToArray();
 
-        var externalId = filename.Split('_')[1].Split('.')[0];
         var product = new AddOrUpdateProductInput(
-            "www.ilewazy.pl",
-            externalId,
+            request.Source,
+            request.ExternalId,
             name,
             values.First(x => x.Name.Contains("Energia")).Value,
             values.First(x => x.Name.Contains("Białko")).Value,

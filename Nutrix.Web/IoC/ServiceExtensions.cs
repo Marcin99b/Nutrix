@@ -1,13 +1,16 @@
 ﻿using Hangfire;
 using Hangfire.MemoryStorage;
 using Microsoft.EntityFrameworkCore;
+using Nutrix.Commons.ETL;
 using Nutrix.Commons.FileSystem;
 using Nutrix.Database;
 using Nutrix.Database.Procedures;
 using Nutrix.Downloading;
 using Nutrix.Importing;
 using Nutrix.Logging;
+using Nutrix.Web.Background;
 using Serilog;
+using System.Threading.Channels;
 
 namespace Nutrix.Web.IoC;
 
@@ -50,13 +53,14 @@ public static class ServiceExtensions
 
     public static WebApplicationBuilder SetupETL(this WebApplicationBuilder builder)
     {
-        _ = builder.Services.AddSingleton<ETLStorage>();
         _ = builder.Services.AddSingleton<IleWazyDownloader>();
         _ = builder.Services.AddSingleton<IleWazyImporter>();
         _ = builder.Services.AddSingleton<ETLManager>();
         _ = builder.Services.AddSingleton<NutrixPaths>();
         _ = builder.Services.AddSingleton<FileSystemProvider>();
         _ = builder.Services.AddSingleton<DownloadHistoryFactory>();
+        _ = builder.Services.AddHostedService<ImportingBackgroundService>();
+        _ = builder.Services.AddSingleton<Channel<ImportRequest>>();
 
         return builder;
     }
