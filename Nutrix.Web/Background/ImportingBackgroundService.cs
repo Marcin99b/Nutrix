@@ -6,7 +6,11 @@ using System.Threading.Channels;
 
 namespace Nutrix.Web.Background;
 
-public class ImportingBackgroundService(Channel<ImportRequest> channel, IServiceProvider serviceProvider, AddOrUpdateProductProcedure addOrUpdate) : BackgroundService
+public class ImportingBackgroundService(
+    Channel<ImportRequest> channel, 
+    IServiceProvider serviceProvider, 
+    AddOrUpdateProductProcedure addOrUpdate) 
+    : BackgroundService
 {
     private readonly int chunkCapacity = 1000;
 
