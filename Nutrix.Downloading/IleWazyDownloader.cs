@@ -1,12 +1,11 @@
 ﻿using HtmlAgilityPack;
 using Nutrix.Commons;
 using Nutrix.Commons.ETL;
-using Nutrix.Commons.FileSystem;
 using Nutrix.Logging;
 using System.Threading.Channels;
 
 namespace Nutrix.Downloading;
-public class IleWazyDownloader(EventLogger eventLogger, DownloadHistoryFactory downloadHistoryFactory, Channel<ImportRequest> channel)
+public class IleWazyDownloader(EventLogger eventLogger, DownloadHistoryFactory downloadHistoryFactory, Channel<ImportRequest> channel) : IDownloader
 {
     private readonly int delayMs = 200;
     private readonly HttpClient client = new();
@@ -126,7 +125,7 @@ public class IleWazyDownloader(EventLogger eventLogger, DownloadHistoryFactory d
             historyItem.UpdateHash(hash);
         }
 
-        await channel.Writer.WriteAsync(new ImportRequest("www.ilewazy.pl", externalId, content));
+        await channel.Writer.WriteAsync(new ImportRequest(DownloaderSources.IleWazy, externalId, content));
         return (true, true);
     }
 

@@ -15,11 +15,11 @@ public record AddOrUpdateProductInput(
 
 public class AddOrUpdateProductProcedure(IDbContextFactory<DatabaseContext> dbContextFactory)
 {
-    public async Task Execute(AddOrUpdateProductInput input, CancellationToken ct)
+    public async Task Execute(IEnumerable<AddOrUpdateProductInput> inputs, CancellationToken ct)
     {
         using var ctx = await dbContextFactory.CreateDbContextAsync(ct);
 
-        var product = new FoodProduct()
+        var products = inputs.Select(input => new FoodProduct()
         {
             Source = input.Source,
             ExternalId = input.ExternalId,
@@ -29,17 +29,20 @@ public class AddOrUpdateProductProcedure(IDbContextFactory<DatabaseContext> dbCo
             Fats1000g = input.Fats1000g,
             Carbs1000g = input.Carbs1000g,
             Fiber1000g = input.Fiber1000g
-        };
+        });
 
-        var found = await ctx.FoodProducts.FirstOrDefaultAsync(x => x.Source == input.Source && x.ExternalId == input.ExternalId);
-        if (found == null)
+        foreach (var product in products)
         {
-            _ = await ctx.FoodProducts.AddAsync(product, ct);
-        }
-        else
-        {
-            product.Id = found.Id;
-            _ = ctx.FoodProducts.Update(product);
+            var found = await ctx.FoodProducts.FirstOrDefaultAsync(x => x.Source == product.Source && x.ExternalId == product.ExternalId);
+            if (found == null)
+            {
+                _ = await ctx.FoodProducts.AddAsync(product, ct);
+            }
+            else
+            {
+                product.Id = found.Id;
+                _ = ctx.FoodProducts.Update(product);
+            }
         }
 
         _ = await ctx.SaveChangesAsync(ct);

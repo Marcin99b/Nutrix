@@ -1,6 +1,7 @@
 ﻿using Hangfire;
 using Hangfire.MemoryStorage;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Nutrix.Commons.ETL;
 using Nutrix.Commons.FileSystem;
 using Nutrix.Database;
@@ -53,8 +54,8 @@ public static class ServiceExtensions
 
     public static WebApplicationBuilder SetupETL(this WebApplicationBuilder builder)
     {
-        _ = builder.Services.AddSingleton<IleWazyDownloader>();
-        _ = builder.Services.AddSingleton<IleWazyImporter>();
+        _ = builder.Services.AddKeyedSingleton<IDownloader, IleWazyDownloader>(DownloaderSources.IleWazy);
+        _ = builder.Services.AddKeyedSingleton<IImporter, IleWazyImporter>(DownloaderSources.IleWazy);
         _ = builder.Services.AddSingleton<ETLManager>();
         _ = builder.Services.AddSingleton<NutrixPaths>();
         _ = builder.Services.AddSingleton<FileSystemProvider>();

@@ -3,7 +3,7 @@ using Nutrix.Commons.ETL;
 using Nutrix.Database.Procedures;
 
 namespace Nutrix.Importing;
-public class IleWazyImporter
+public class IleWazyImporter : IImporter
 {
     public AddOrUpdateProductInput Import(ImportRequest request)
     {

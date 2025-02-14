@@ -1,5 +1,6 @@
 using Hangfire;
 using Microsoft.AspNetCore.Mvc;
+using Nutrix.Commons.ETL;
 using Nutrix.Database.Procedures;
 using Nutrix.Downloading;
 using Nutrix.Importing;
@@ -37,11 +38,7 @@ app.MapGet("/search", async ([FromQuery] string q, SearchProductProcedure proced
 var jobsClient = app!.Services.GetService<IRecurringJobManagerV2>()!;
 
 jobsClient.AddOrUpdate<ETLManager>(
-    $"Download_{nameof(IleWazyDownloader)}", x => x.RunDownloader(nameof(IleWazyDownloader), CancellationToken.None),
+    $"Download_{DownloaderSources.IleWazy}", x => x.RunDownloader(DownloaderSources.IleWazy, CancellationToken.None),
     "0 3 * * 2,4"   /*At    03:00          on Tuesday and Thursday.*/);
-
-jobsClient.AddOrUpdate<ETLManager>(
-    $"Import_{nameof(IleWazyImporter)}", x => x.RunImporter(nameof(IleWazyImporter), CancellationToken.None),
-    "0 4,6 * * 2,4" /*At    04:00, 06:00   on Tuesday and Thursday.*/);
 
 app.Run();
