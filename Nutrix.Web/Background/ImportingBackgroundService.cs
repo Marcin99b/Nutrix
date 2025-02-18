@@ -28,7 +28,7 @@ public class ImportingBackgroundService(
                     .SelectMany(x => 
                     {
                         var source = x.First().Source;
-                        var importer = serviceProvider.GetKeyedService<IImporter>(DownloaderSources.IleWazy)!;
+                        var importer = serviceProvider.GetKeyedService<IImporter>(source)!;
                         return x.Select(importer.Import);
                     });
 

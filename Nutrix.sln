@@ -13,7 +13,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nutrix.Commons", "Nutrix.Co
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nutrix.Web", "Nutrix.Web\Nutrix.Web.csproj", "{E9D1C339-DF12-4AED-8AE3-A1E8B46435BA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nutrix.Logging", "Nutrix.Logging\Nutrix.Logging.csproj", "{B5680DBF-B414-42FE-AE17-CF40FF672FBA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nutrix.Logging", "Nutrix.Logging\Nutrix.Logging.csproj", "{B5680DBF-B414-42FE-AE17-CF40FF672FBA}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ETL", "ETL", "{1EEC215F-E2C3-4999-9520-0962ECD04D21}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -48,6 +50,10 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{BE2D50AF-2DBE-465A-BF9D-53E683293393} = {1EEC215F-E2C3-4999-9520-0962ECD04D21}
+		{18C6C861-4D12-4651-8BA8-0EB6861ABB21} = {1EEC215F-E2C3-4999-9520-0962ECD04D21}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3E7E8822-3147-4E2A-A559-8FC641A83F25}
