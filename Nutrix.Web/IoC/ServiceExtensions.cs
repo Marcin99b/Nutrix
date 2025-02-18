@@ -42,11 +42,11 @@ public static class ServiceExtensions
     {
         _ = builder.Services
             .AddHangfire(configuration => configuration
-            .UseSerilogLogProvider()
-            .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
-            .UseSimpleAssemblyNameTypeSerializer()
-            .UseRecommendedSerializerSettings()
-            .UseMemoryStorage()); //todo db
+                .UseSerilogLogProvider()
+                .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+                .UseSimpleAssemblyNameTypeSerializer()
+                .UseRecommendedSerializerSettings()
+                .UseMemoryStorage()); //todo db
         _ = builder.Services.AddHangfireServer();
 
         return builder;

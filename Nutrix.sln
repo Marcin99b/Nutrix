@@ -17,6 +17,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nutrix.Logging", "Nutrix.Lo
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ETL", "ETL", "{1EEC215F-E2C3-4999-9520-0962ECD04D21}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nutrix.Domain", "Nutrix.Domain\Nutrix.Domain.csproj", "{FDDCF695-D056-47FD-941E-776207878764}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -47,6 +49,10 @@ Global
 		{B5680DBF-B414-42FE-AE17-CF40FF672FBA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B5680DBF-B414-42FE-AE17-CF40FF672FBA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B5680DBF-B414-42FE-AE17-CF40FF672FBA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FDDCF695-D056-47FD-941E-776207878764}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FDDCF695-D056-47FD-941E-776207878764}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FDDCF695-D056-47FD-941E-776207878764}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FDDCF695-D056-47FD-941E-776207878764}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
